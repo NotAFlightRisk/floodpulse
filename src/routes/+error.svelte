@@ -9,7 +9,6 @@
 </svelte:head>
 
 <div class="lost">
-  <p class="carved">{page.status}</p>
   <h1>{lost ? "That's not on the map" : 'Something went wrong'}</h1>
   <p>{page.error?.message}</p>
   <a href="/">Back to all rivers</a>

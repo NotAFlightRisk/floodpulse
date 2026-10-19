@@ -136,7 +136,7 @@
   }
 
   .axis {
-    font-size: 9px;
+    font-size: 10px;
     fill: var(--ink-faint);
   }
 

@@ -114,7 +114,7 @@
     text-anchor: middle;
     font-size: 10px;
     font-weight: 700;
-    fill: var(--ink-faint);
+    fill: var(--ink-soft);
   }
 
   .tick {

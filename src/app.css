@@ -24,7 +24,7 @@
   --severe: light-dark(#7d1022, #f0566d);
   --warning: light-dark(#c62632, #ff7469);
   --alert: light-dark(#c77700, #f2a630);
-  --on-plaque: #fff;
+  --on-plaque: light-dark(#fff, #14191b);
 
   --map-land: light-dark(#dfe2dc, #171d1f);
   --map-park: light-dark(#d3dbcf, #1a2321);
@@ -51,7 +51,6 @@
   --tap: 44px;
   --slab: 400px;
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
-  --quick: 180ms;
   --slow: 900ms;
 }
 
