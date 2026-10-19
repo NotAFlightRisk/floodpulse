@@ -394,23 +394,24 @@
           return;
         }
         target.addControl(new NavigationControl({ showCompass: false }), 'top-right');
-        target.addControl(new AttributionControl({ compact: !wide.current }), 'top-right');
+        target.addControl(new AttributionControl({ compact: true }), 'top-right');
         const popup = new Popup({
           closeButton: false,
           closeOnClick: false,
           offset: 12,
           className: 'tip'
         });
-        // compact attribution opens itself once the sources say who they are, so it gets shut
-        // again until someone opens it on purpose
+        // the credits fold into the (i) after five seconds, or a drag, as OSM's guidelines allow
+        let touched = false;
         const shut = () =>
+          touched ||
           container
             .querySelector('.maplibregl-compact-show')
             ?.classList.remove('maplibregl-compact-show');
-        target.on('sourcedata', shut);
+        target.once('load', () => setTimeout(shut, 5000));
         container
           .querySelector('.maplibregl-ctrl-attrib-button')
-          ?.addEventListener('click', () => target?.off('sourcedata', shut), { once: true });
+          ?.addEventListener('click', () => (touched = true), { once: true });
         target.on('load', () => {
           addLayers(target!);
           repaint(target!);
