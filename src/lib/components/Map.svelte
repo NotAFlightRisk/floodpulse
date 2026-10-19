@@ -390,13 +390,7 @@
   });
 </script>
 
-<div
-  class="map"
-  class:dark={theme.dark}
-  bind:this={container}
-  role="region"
-  aria-label="Map of river gauges in England"
->
+<div class="map" class:dark={theme.dark} bind:this={container}>
   {#if unsupported}
     <p class="unsupported">
       This browser can't draw the map, as it needs WebGL2. Search and the gauge pages still work.

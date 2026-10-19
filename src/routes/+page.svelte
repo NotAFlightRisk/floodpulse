@@ -16,6 +16,7 @@
 </script>
 
 <div class="overview">
+  <h1 class="visually-hidden">River levels and flood warnings across England</h1>
   <section aria-labelledby="warnings">
     <h2 class="carved rule" id="warnings">Flood warnings</h2>
     {#if latest.warnings.length}

@@ -66,10 +66,10 @@
     <Masthead summary={data.summary} {feed} {theme} picked={Boolean(picked)} />
   </header>
 
-  <div class="map">
+  <section class="map" aria-label="Map of river gauges in England">
     <Map live={feed.live} {picked} {shown} {theme} />
     <Key bind:shown />
-  </div>
+  </section>
 
   <div class="rail">
     <main class="panel">
