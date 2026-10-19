@@ -1,4 +1,5 @@
 <script lang="ts">
+  import ExternalLink from '#lib/components/ExternalLink.svelte';
   import Glyph from '#lib/components/Glyph.svelte';
   import Hydrograph from '#lib/components/Hydrograph.svelte';
   import Neighbour from '#lib/components/Neighbour.svelte';
@@ -169,8 +170,12 @@
   </dl>
 
   <p class="links">
-    {#if gauge.rloi}<a href="{official}/station/{gauge.rloi}">Official page for this gauge</a>{/if}
-    <a href="https://environment.data.gov.uk/flood-monitoring/id/stations/{gauge.id}">Raw data</a>
+    {#if gauge.rloi}<ExternalLink href="{official}/station/{gauge.rloi}"
+        >Official page for this gauge</ExternalLink
+      >{/if}
+    <ExternalLink href="https://environment.data.gov.uk/flood-monitoring/id/stations/{gauge.id}"
+      >Raw data</ExternalLink
+    >
   </p>
 </article>
 

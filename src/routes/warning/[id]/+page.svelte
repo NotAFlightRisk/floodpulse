@@ -1,4 +1,5 @@
 <script lang="ts">
+  import ExternalLink from '#lib/components/ExternalLink.svelte';
   import Plaque from '#lib/components/Plaque.svelte';
   import { ago, clock, date, severityLabel } from '#lib/format.js';
   import { useFeed } from '#lib/live.svelte.js';
@@ -35,7 +36,9 @@
   <p class="when">In force since {clock(since)} on {date(since)} ({ago(since, feed.now)})</p>
   {#if warning.message}<p class="message">{warning.message}</p>{/if}
   <p class="links">
-    <a href="{official}/target-area/{warning.id}">This warning on Check for flooding</a>
+    <ExternalLink href="{official}/target-area/{warning.id}"
+      >This warning on Check for flooding</ExternalLink
+    >
   </p>
   <p class="note">
     The outline on the map is the area this warning covers, not where the water actually is.

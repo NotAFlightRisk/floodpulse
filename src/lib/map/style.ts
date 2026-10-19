@@ -35,6 +35,8 @@ export const palette = (): Palette =>
 
 const OSM = 'openmaptiles';
 const sans = ['Noto Sans Regular'];
+const credit = (href: string, text: string) =>
+  `<a href="${href}" target="_blank" rel="noopener">${text}<span class="visually-hidden"> (opens in a new tab)</span></a>`;
 const width = (stops: number[]) => ['interpolate', ['exponential', 1.5], ['zoom'], ...stops];
 
 // [layer, paint property, token], so a theme change can repaint without rebuilding the style
@@ -120,14 +122,14 @@ export function basemap(colours: Palette): StyleSpecification {
       [OSM]: {
         type: 'vector',
         url: 'https://tiles.openfreemap.org/planet',
-        attribution:
-          '<a href="https://openfreemap.org">OpenFreeMap</a> © <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+        attribution: `${credit('https://openfreemap.org', 'OpenFreeMap')} © ${credit('https://www.openstreetmap.org/copyright', 'OpenStreetMap')}`
       },
       dem: {
         type: 'raster-dem',
         url: 'https://tiles.mapterhorn.com/tilejson.json',
         encoding: 'terrarium',
-        tileSize: 512
+        tileSize: 512,
+        attribution: credit('https://mapterhorn.com/attribution', '© Mapterhorn')
       }
     },
     layers

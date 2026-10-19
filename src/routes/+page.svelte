@@ -1,6 +1,7 @@
 <script lang="ts">
   import { flip } from 'svelte/animate';
   import { MediaQuery } from 'svelte/reactivity';
+  import ExternalLink from '#lib/components/ExternalLink.svelte';
   import Glyph from '#lib/components/Glyph.svelte';
   import Plaque from '#lib/components/Plaque.svelte';
   import RiverProfile from '#lib/components/RiverProfile.svelte';
@@ -54,7 +55,8 @@
     {:else}
       <p class="calm">
         None in force anywhere in England right now. That's the Environment Agency's word, and
-        <a href={official}>Check for flooding</a> is where they'd say otherwise first.
+        <ExternalLink href={official}>Check for flooding</ExternalLink> is where they'd say otherwise
+        first.
       </p>
     {/if}
   </section>

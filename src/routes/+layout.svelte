@@ -2,6 +2,7 @@
   import { onMount } from 'svelte';
   import { goto } from '$app/navigation';
   import { page } from '$app/state';
+  import ExternalLink from '#lib/components/ExternalLink.svelte';
   import Key from '#lib/components/Key.svelte';
   import Map from '#lib/components/Map.svelte';
   import Masthead from '#lib/components/Masthead.svelte';
@@ -99,20 +100,25 @@
 
     <footer class="foot">
       <p>
-        Readings from the <a href="https://environment.data.gov.uk/flood-monitoring/doc/reference"
-          >Environment Agency</a
+        Readings from the <ExternalLink
+          href="https://environment.data.gov.uk/flood-monitoring/doc/reference"
+          >Environment Agency</ExternalLink
         >, under the
-        <a href="https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/"
-          >Open Government Licence</a
+        <ExternalLink
+          href="https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/"
+          >Open Government Licence</ExternalLink
         >. Rivers from
-        <a href="https://www.ordnancesurvey.co.uk/products/os-open-rivers">OS Open Rivers</a>,
-        contains OS data © Crown copyright and database right 2026. Map data ©
-        <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors. Not an
-        official service, so for anything that matters check
-        <a href={official}>Check for flooding</a> or call Floodline on 0345 988 1188.
+        <ExternalLink href="https://www.ordnancesurvey.co.uk/products/os-open-rivers"
+          >OS Open Rivers</ExternalLink
+        >, contains OS data © Crown copyright and database right 2026. Map data ©
+        <ExternalLink href="https://www.openstreetmap.org/copyright">OpenStreetMap</ExternalLink>
+        contributors. Not an official service, so for anything that matters check
+        <ExternalLink href={official}>Check for flooding</ExternalLink> or call Floodline on 0345 988
+        1188.
       </p>
       <p>
-        <a href={source}>Source on GitHub</a> · made by <a href="https://peng.ly">NotAFlightRisk</a>
+        <ExternalLink href={source}>Source on GitHub</ExternalLink> · made by
+        <ExternalLink href="https://peng.ly">NotAFlightRisk</ExternalLink>
       </p>
     </footer>
   </div>
