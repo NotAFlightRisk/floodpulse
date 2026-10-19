@@ -10,15 +10,14 @@
   import { metres, millimetres, severityLabel, stale, stateLabel } from '#lib/format.js';
   import { gauge, plaque, RATIO, SEVERITIES, STATES, TRENDS } from '#lib/map/icons.js';
   import {
-    DASHES,
-    FLOW,
     FLOW_FROM,
-    glow,
+    FLOWS,
     LAYER,
     LAYERS,
     opacity,
     ramp,
-    SOURCE
+    SOURCE,
+    WHOLE
   } from '#lib/map/network.js';
   import { basemap, PAINT, palette, resolve } from '#lib/map/style.js';
   import { current, position, riverNames } from '#lib/rivers.js';
@@ -60,6 +59,7 @@
   const point = (lon: number, lat: number) => ({ type: 'Point' as const, coordinates: [lon, lat] });
   const collection = <T,>(features: T[]) => ({ type: 'FeatureCollection' as const, features });
   const reach = (id: string) => ({ source: SOURCE, sourceLayer: LAYER, id });
+  const whole = (id: number) => ({ source: WHOLE, sourceLayer: LAYER, id });
   // room for the key strip along the bottom on a desktop
   const padding = (around: number) => ({
     top: around,
@@ -161,7 +161,7 @@
     paint('reaches', 'line-color', ramp(states));
     paint('reach-lit', 'line-color', ink);
     paint('river-lit', 'line-color', ink);
-    paint(FLOW, 'line-color', halo);
+    for (const id of FLOWS) paint(id, 'line-color', halo);
     paint('river-names', 'text-color', label);
     paint('river-names', 'text-halo-color', halo);
     const bySeverity: ExpressionSpecification = [
@@ -179,16 +179,20 @@
   }
 
   function addLayers(target: Map) {
-    target.addSource(SOURCE, {
-      type: 'vector',
+    const network = {
+      type: 'vector' as const,
       // maplibre wants a whole url, and new URL() would escape the braces
       tiles: [`${location.origin}${tiles.url}`],
       bounds: tiles.bounds,
       minzoom: 4,
-      maxzoom: 10,
+      maxzoom: 10
+    };
+    target.addSource(SOURCE, {
+      ...network,
       promoteId: 'g',
       attribution: 'Contains OS data © Crown copyright and database right 2026'
     });
+    target.addSource(WHOLE, { ...network, promoteId: 'r' });
     target.addSource('gauges', {
       type: 'geojson',
       data: collection([]),
@@ -199,7 +203,6 @@
     target.addSource('outlines', { type: 'geojson', data: collection([]) });
 
     for (const layer of LAYERS) target.addLayer(layer, 'places');
-    target.setPaintProperty(FLOW, 'line-dasharray', DASHES[0]);
     target.addLayer({
       id: 'outlines-fill',
       type: 'fill',
@@ -448,7 +451,7 @@
       'river-lit',
       'reach-lit',
       'reaches',
-      FLOW,
+      ...FLOWS,
       'river-names',
       'network-hit'
     ];
@@ -470,7 +473,7 @@
 
   $effect(() => {
     if (!map) return;
-    map.setFilter(FLOW, ['in', ['get', 'g'], ['literal', rising]]);
+    for (const id of FLOWS) map.setFilter(id, ['in', ['get', 'g'], ['literal', rising]]);
     if (calm.current || !rising.length || !shown.river) return;
     const target = map;
     let frame = 0;
@@ -479,7 +482,8 @@
     const tick = (now: number) => {
       if (now - last > 70 && target.getZoom() >= FLOW_FROM) {
         last = now;
-        target.setPaintProperty(FLOW, 'line-dasharray', DASHES[frame++ % DASHES.length]);
+        frame = (frame + 1) % FLOWS.length;
+        FLOWS.forEach((id, i) => target.setPaintProperty(id, 'line-layer-opacity', +(i === frame)));
       }
       request = requestAnimationFrame(tick);
     };
@@ -487,8 +491,14 @@
     return () => cancelAnimationFrame(request);
   });
 
+  // the river pointed at and the one in focus get a casing all along them
+  let glowing: number[] = [];
   $effect(() => {
-    map?.setPaintProperty('river-lit', 'line-opacity', glow(pointed, river?.index));
+    if (!map) return;
+    for (const id of glowing) map.removeFeatureState(whole(id), 'glow');
+    glowing = [river?.index, pointed].filter((id) => id !== undefined);
+    if (river) map.setFeatureState(whole(river.index), { glow: 'focus' });
+    if (pointed !== undefined) map.setFeatureState(whole(pointed), { glow: 'pointed' });
   });
 
   // the picked gauge and whatever's pointed at get a casing, all along their stretch

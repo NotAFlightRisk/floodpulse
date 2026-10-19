@@ -1,10 +1,23 @@
 import type { ExpressionSpecification, LayerSpecification } from '@maplibre/maplibre-gl-style-spec';
 
 export const SOURCE = 'network';
+// the same tiles keyed by river, so a whole one lights up through feature state
+export const WHOLE = 'whole';
 export const LAYER = 'rivers';
-export const FLOW = 'flow';
 // too small to make out zoomed further out, where the colour's doing the work anyway
 export const FLOW_FROM = 6;
+
+// in line widths, which keeps the dashes in step with the river's size
+const [DASH, GAP, STEPS] = [2, 4, 12];
+
+/** Dashes that walk downstream, a frame at a time, for the rivers on the rise */
+const DASHES = Array.from({ length: STEPS }, (_, step) => {
+  const shift = (step / STEPS) * (DASH + GAP);
+  return shift <= GAP ? [0, shift, DASH, GAP - shift] : [shift - GAP, GAP, DASH + GAP - shift];
+});
+
+// a layer per step, since changing the dashes themselves reloads every tile
+export const FLOWS = DASHES.map((_, step) => `flow-${step}`);
 
 // most of the network is brooks, so width stays low until the river gets properly big
 const size = (low: number, high: number): ExpressionSpecification => [
@@ -57,23 +70,28 @@ const dim = (river: number | undefined): ExpressionSpecification | number =>
   river === undefined ? 1 : ['case', ['==', ['get', 'r'], river], 1, 0.25];
 
 /** A soft casing round the river being pointed at, and a fainter one round the one in focus */
-export const glow = (pointed?: number, focus?: number): ExpressionSpecification | number =>
-  pointed === undefined && focus === undefined
-    ? 0
-    : ['match', ['get', 'r'], pointed ?? -1, 0.3, focus ?? -1, 0.14, 0];
+const glow: ExpressionSpecification = [
+  'match',
+  ['feature-state', 'glow'],
+  'pointed',
+  0.3,
+  'focus',
+  0.14,
+  0
+];
 
 /** How solid each kind of line is, with a stretch that has nothing to compare against as faint */
 export const opacity = (river?: number) => ({
   streams: ['*', STREAM, dim(river)] as ExpressionSpecification,
   reaches: ['*', ['case', unread, STREAM, 1], dim(river)] as ExpressionSpecification,
-  [FLOW]: dim(river)
+  ...Object.fromEntries(FLOWS.map((id) => [id, dim(river)]))
 });
 
-const line = (id: string, paint: object, filter?: ExpressionSpecification) =>
+const line = (id: string, paint: object, filter?: ExpressionSpecification, source = SOURCE) =>
   ({
     id,
     type: 'line',
-    source: SOURCE,
+    source,
     'source-layer': LAYER,
     ...(filter && { filter }),
     layout: { 'line-cap': 'round', 'line-join': 'round' },
@@ -82,14 +100,26 @@ const line = (id: string, paint: object, filter?: ExpressionSpecification) =>
 
 export const LAYERS: LayerSpecification[] = [
   line('streams', { 'line-width': width(0.8), 'line-opacity': STREAM }, ['!', watched]),
-  line('river-lit', { 'line-width': width(1.4, 4), 'line-opacity': 0 }, ['has', 'r']),
+  line('river-lit', { 'line-width': width(1.4, 4), 'line-opacity': glow }, ['has', 'r'], WHOLE),
   line(
     'reach-lit',
     { 'line-width': width(1.4, 4), 'line-opacity': ['case', lit, 0.9, 0] },
     watched
   ),
   line('reaches', { 'line-width': width(1.4) }, watched),
-  { ...line(FLOW, { 'line-width': width(0.5) }, ['in', ['get', 'g'], '']), minzoom: FLOW_FROM },
+  ...DASHES.map((dashes, step) => ({
+    ...line(
+      FLOWS[step],
+      {
+        'line-width': width(0.5),
+        'line-dasharray': dashes,
+        'line-layer-opacity': step ? 0 : 1,
+        'line-layer-opacity-transition': { duration: 0 }
+      },
+      ['in', ['get', 'g'], '']
+    ),
+    minzoom: FLOW_FROM
+  })),
   {
     id: 'river-names',
     type: 'symbol',
@@ -115,12 +145,3 @@ export const LAYERS: LayerSpecification[] = [
   // invisible and fat, so a finger doesn't have to land on a hairline
   line('network-hit', { 'line-width': 16, 'line-opacity': 0 }, ['any', watched, ['has', 'r']])
 ];
-
-// in line widths, which keeps the dashes in step with the river's size
-const [DASH, GAP, STEPS] = [2, 4, 12];
-
-/** Dashes that walk downstream, a frame at a time, for the rivers on the rise */
-export const DASHES = Array.from({ length: STEPS }, (_, step) => {
-  const shift = (step / STEPS) * (DASH + GAP);
-  return shift <= GAP ? [0, shift, DASH, GAP - shift] : [shift - GAP, GAP, DASH + GAP - shift];
-});
