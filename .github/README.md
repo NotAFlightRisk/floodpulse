@@ -21,9 +21,9 @@
 
 ## About
 
-A live map of the Environment Agency's river, tidal and groundwater gauges in England. Each one is coloured by where its level sits against that gauge's own normal range, so a big river and a tiny brook compare fairly, and shaped by whether it's gone up or down in the last three hours. Official flood warnings and alerts go on top, with the areas they cover, and you can switch on the rain gauges too.
+A live map of England's rivers, coloured by the Environment Agency gauges watching them. Each stretch takes its colour from where its gauge's level sits against that gauge's own normal range, so a big river and a tiny brook compare fairly, and stretches that are rising get dashes walking downstream. Official flood warnings and alerts go on top, with the areas they cover, and you can switch on the tidal, groundwater and rain gauges too.
 
-Pick a gauge (or search for your river or town) and you get its level on a carved scale beside its record and recent highs, plus the last five days of readings. It refreshes itself every 15 minutes, which is as often as the EA updates.
+Pick a river and it lights up from source to sea, with every gauge along it on one chart. Pick a gauge (or search for your river or town) and you get its level on a carved scale beside its record and recent highs, the last five days of readings, and the next gauges up and down the river. It refreshes itself every 15 minutes, which is as often as the EA updates.
 
 It's not an official service, so for anything that matters use [Check for flooding](https://check-for-flooding.service.gov.uk/).
 
@@ -82,13 +82,15 @@ npm run dev
 
 The dev server is then on [localhost:5173](http://localhost:5173), and the first page load waits while it fetches every station from the EA. The other scripts you'll want are `npm run check` (types), `npm test` and `npm run format`.
 
+The river network is built ahead of time from [OS Open Rivers](https://osdatahub.os.uk/downloads/open/OpenRivers), and the tiles and river list it makes are checked in, so you only need this when the OS puts out a new one. Grab the GeoPackage, unzip it, and run `npm run rivers -- path/to/oprvrs_gb.gpkg`.
+
 Browsers only ever talk to us, never to the EA directly. The server grabs the latest readings every 15 minutes, keeps the last four hours of each gauge to work out which way it's going, and caches each gauge's five-day history for five minutes.
 
 ---
 
 ## Credits
 
-River levels, rainfall and flood warnings are from the [Environment Agency's flood monitoring API](https://environment.data.gov.uk/flood-monitoring/doc/reference), under the [Open Government Licence](https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/). The map is [OpenStreetMap](https://www.openstreetmap.org/copyright) data served by [OpenFreeMap](https://openfreemap.org/), with hills from [Mapterhorn](https://mapterhorn.com/), drawn by [MapLibre](https://maplibre.org/). Thanks to all of them for keeping it free.
+River levels, rainfall and flood warnings are from the [Environment Agency's flood monitoring API](https://environment.data.gov.uk/flood-monitoring/doc/reference), under the [Open Government Licence](https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/). The rivers are [OS Open Rivers](https://www.ordnancesurvey.co.uk/products/os-open-rivers) (contains OS data © Crown copyright and database right 2026). The rest of the map is [OpenStreetMap](https://www.openstreetmap.org/copyright) data served by [OpenFreeMap](https://openfreemap.org/), with hills from [Mapterhorn](https://mapterhorn.com/), drawn by [MapLibre](https://maplibre.org/). Thanks to all of them for keeping it free.
 
 ---
 

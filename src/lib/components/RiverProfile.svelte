@@ -16,7 +16,7 @@
   let { river, gauges, now, here, small = false }: Props = $props();
 
   const spotlight = useSpotlight();
-  const W = 360;
+  const W = $derived(small ? 132 : 360);
   const H = $derived(small ? 44 : 168);
   const LEFT = $derived(small ? 4 : 72);
   const RIGHT = $derived(small ? 4 : 10);

@@ -3,6 +3,8 @@ import type { ExpressionSpecification, LayerSpecification } from '@maplibre/mapl
 export const SOURCE = 'network';
 export const LAYER = 'rivers';
 export const FLOW = 'flow';
+// too small to make out zoomed further out, where the colour's doing the work anyway
+export const FLOW_FROM = 6;
 
 // most of the network is brooks, so width stays low until the river gets properly big
 const size = (low: number, high: number): ExpressionSpecification => [
@@ -54,6 +56,12 @@ const STREAM = 0.5;
 const dim = (river: number | undefined): ExpressionSpecification | number =>
   river === undefined ? 1 : ['case', ['==', ['get', 'r'], river], 1, 0.25];
 
+/** A soft casing round the river being pointed at, and a fainter one round the one in focus */
+export const glow = (pointed?: number, focus?: number): ExpressionSpecification | number =>
+  pointed === undefined && focus === undefined
+    ? 0
+    : ['match', ['get', 'r'], pointed ?? -1, 0.3, focus ?? -1, 0.14, 0];
+
 /** How solid each kind of line is, with a stretch that has nothing to compare against as faint */
 export const opacity = (river?: number) => ({
   streams: ['*', STREAM, dim(river)] as ExpressionSpecification,
@@ -74,14 +82,14 @@ const line = (id: string, paint: object, filter?: ExpressionSpecification) =>
 
 export const LAYERS: LayerSpecification[] = [
   line('streams', { 'line-width': width(0.8), 'line-opacity': STREAM }, ['!', watched]),
+  line('river-lit', { 'line-width': width(1.4, 4), 'line-opacity': 0 }, ['has', 'r']),
   line(
     'reach-lit',
-    { 'line-width': width(1.2, 5), 'line-opacity': ['case', lit, 0.9, 0] },
+    { 'line-width': width(1.4, 4), 'line-opacity': ['case', lit, 0.9, 0] },
     watched
   ),
   line('reaches', { 'line-width': width(1.4) }, watched),
-  // too small to make out zoomed right out, where the colour's doing the work anyway
-  { ...line(FLOW, { 'line-width': width(0.5) }, ['in', ['get', 'g'], '']), minzoom: 6 },
+  { ...line(FLOW, { 'line-width': width(0.5) }, ['in', ['get', 'g'], '']), minzoom: FLOW_FROM },
   {
     id: 'river-names',
     type: 'symbol',

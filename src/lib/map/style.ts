@@ -74,7 +74,7 @@ const LAYERS = [
     'source-layer': 'transportation',
     minzoom: 7,
     filter: ['in', ['get', 'class'], ['literal', ['motorway', 'trunk', 'primary', 'secondary']]],
-    paint: { 'line-width': width([7, 0.4, 12, 1.5, 16, 6]), 'line-opacity': 0.75 }
+    paint: { 'line-width': width([7, 0.4, 12, 1.5, 16, 6]), 'line-opacity': 0.55 }
   },
   {
     id: 'borders',

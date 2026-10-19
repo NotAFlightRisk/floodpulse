@@ -71,7 +71,15 @@
 <article class="gauge">
   <a class="back" href="/">All rivers</a>
   <h1>{gauge.name}</h1>
-  <p class="place">{where}</p>
+  <p class="place">
+    {#if data.river && gauge.river === data.river.name}
+      {gauge.kind === 'river' ? '' : `${kindLabel[gauge.kind]} gauge, `}<a
+        href="/river/{data.river.slug}">{gauge.river}</a
+      >{gauge.town ? `, ${gauge.town}` : ''}
+    {:else}
+      {where}
+    {/if}
+  </p>
 
   {#if gauge.value !== undefined && gauge.at}
     <p class="reading">

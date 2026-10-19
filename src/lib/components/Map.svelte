@@ -9,7 +9,17 @@
   import { goto } from '$app/navigation';
   import { metres, millimetres, severityLabel, stale, stateLabel } from '#lib/format.js';
   import { gauge, plaque, RATIO, SEVERITIES, STATES, TRENDS } from '#lib/map/icons.js';
-  import { DASHES, FLOW, LAYER, LAYERS, opacity, ramp, SOURCE } from '#lib/map/network.js';
+  import {
+    DASHES,
+    FLOW,
+    FLOW_FROM,
+    glow,
+    LAYER,
+    LAYERS,
+    opacity,
+    ramp,
+    SOURCE
+  } from '#lib/map/network.js';
   import { basemap, PAINT, palette, resolve } from '#lib/map/style.js';
   import { current, position, riverNames } from '#lib/rivers.js';
   import type { Spotlight } from '#lib/spotlight.svelte.js';
@@ -39,6 +49,7 @@
   let container: HTMLDivElement;
   let map = $state.raw<Map>();
   let unsupported = $state(false);
+  let pointed = $state<number>();
   // the built-in Map, since maplibre's has the name in here
   const outlines = new globalThis.Map<string, Promise<Feature[]>>();
   const byId = $derived(new globalThis.Map(live?.gauges.map((g) => [g.id, g])));
@@ -149,6 +160,7 @@
     paint('streams', 'line-color', colours.river);
     paint('reaches', 'line-color', ramp(states));
     paint('reach-lit', 'line-color', ink);
+    paint('river-lit', 'line-color', ink);
     paint(FLOW, 'line-color', halo);
     paint('river-names', 'text-color', label);
     paint('river-names', 'text-halo-color', halo);
@@ -334,10 +346,12 @@
       spotlight.id =
         feature?.properties.g ??
         (feature?.layer.id === 'gauges' ? feature.properties.id : undefined);
+      pointed = feature?.properties.r;
     });
     target.getCanvas().addEventListener('mouseleave', () => {
       popup.remove();
       spotlight.id = undefined;
+      pointed = undefined;
     });
     target.on('click', ({ point }) => {
       const feature = under(target, point);
@@ -377,16 +391,16 @@
           offset: 12,
           className: 'tip'
         });
-        // compact attribution opens itself whenever the sources say who they are, so it gets
-        // shut again until someone opens it on purpose
+        // compact attribution opens itself once the sources say who they are, so it gets shut
+        // again until someone opens it on purpose
         const shut = () =>
           container
             .querySelector('.maplibregl-compact-show')
             ?.classList.remove('maplibregl-compact-show');
-        target.on('idle', shut);
+        target.on('sourcedata', shut);
         container
           .querySelector('.maplibregl-ctrl-attrib-button')
-          ?.addEventListener('click', () => target?.off('idle', shut), { once: true });
+          ?.addEventListener('click', () => target?.off('sourcedata', shut), { once: true });
         target.on('load', () => {
           addLayers(target!);
           repaint(target!);
@@ -429,7 +443,16 @@
     map.setLayoutProperty('rain', 'visibility', shown.rain ? 'visible' : 'none');
     for (const layer of ['warnings', 'outlines-fill', 'outlines-line'])
       map.setLayoutProperty(layer, 'visibility', shown.warnings ? 'visible' : 'none');
-    for (const layer of ['streams', 'reaches', 'reach-lit', FLOW, 'river-names', 'network-hit'])
+    const network = [
+      'streams',
+      'river-lit',
+      'reach-lit',
+      'reaches',
+      FLOW,
+      'river-names',
+      'network-hit'
+    ];
+    for (const layer of network)
       map.setLayoutProperty(layer, 'visibility', shown.river ? 'visible' : 'none');
   });
 
@@ -454,7 +477,7 @@
     let last = 0;
     let request = 0;
     const tick = (now: number) => {
-      if (now - last > 70) {
+      if (now - last > 70 && target.getZoom() >= FLOW_FROM) {
         last = now;
         target.setPaintProperty(FLOW, 'line-dasharray', DASHES[frame++ % DASHES.length]);
       }
@@ -462,6 +485,10 @@
     };
     request = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(request);
+  });
+
+  $effect(() => {
+    map?.setPaintProperty('river-lit', 'line-opacity', glow(pointed, river?.index));
   });
 
   // the picked gauge and whatever's pointed at get a casing, all along their stretch
@@ -537,13 +564,16 @@
     }
 
     :global(.tip .maplibregl-popup-content) {
-      display: grid;
       padding: var(--space-1) var(--space-2);
       font: 400 0.8125rem/1.35 var(--font);
       color: var(--ink-soft);
       background: var(--stone);
       border-radius: var(--radius);
       box-shadow: 0 1px 0 var(--incise);
+    }
+
+    :global(.tip span) {
+      display: grid;
     }
 
     :global(.tip strong) {

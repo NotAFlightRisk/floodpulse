@@ -18,12 +18,15 @@
   const latest = $derived(feed.live ? summarise(feed.live) : data.summary);
   const lookup = $derived(new Map(feed.live?.gauges.map((g) => [g.id, g])));
 
+  const gauges = (n: number) => `${n} gauge${n === 1 ? '' : 's'}`;
+
   function said({ stops, length }: River) {
-    if (!feed.live) return `${stops.length} gauges over ${length} km`;
+    if (!feed.live) return `${gauges(stops.length)} over ${length} km`;
     const high = stops.filter((stop) => current(lookup.get(stop.id), feed.now) === 'high').length;
-    return high
-      ? `${high} of ${stops.length} gauges above normal`
-      : `${stops.length} gauges, none above normal`;
+    if (!high) return `${gauges(stops.length)}, none above normal`;
+    return stops.length === 1
+      ? 'Its gauge is above normal'
+      : `${high} of ${gauges(stops.length)} above normal`;
   }
 </script>
 
