@@ -2,28 +2,56 @@
   import { goto } from '$app/navigation';
   import { kindLabel } from '#lib/format.js';
   import type { Feed } from '#lib/live.svelte.js';
+  import { riverNames } from '#lib/rivers.js';
+  import type { RiverName } from '#lib/types.js';
 
   let { feed }: { feed: Feed } = $props();
 
   const MOST = 8;
+  const RIVERS = 3;
   let query = $state('');
   let active = $state(0);
   let open = $state(false);
+  let rivers = $state.raw<RiverName[]>([]);
+
+  // the river list only comes down once someone starts looking
+  const fetchRivers = () =>
+    riverNames()
+      .then((list) => (rivers = list))
+      .catch(() => {});
 
   const matches = $derived.by(() => {
     const words = query.toLowerCase().trim();
-    if (words.length < 2 || !feed.live) return [];
-    return feed.live.gauges
+    if (words.length < 2) return [];
+    const found = rivers
+      .filter((river) => river.name.toLowerCase().includes(words))
+      .sort((a, b) => b.gauges - a.gauges)
+      .slice(0, RIVERS)
+      .map((river) => ({
+        href: `/river/${river.slug}`,
+        title: river.name,
+        meta: [
+          `River, ${river.gauges} gauge${river.gauges === 1 ? '' : 's'}`,
+          river.into && `into the ${river.into}`
+        ]
+      }));
+    const gauges = (feed.live?.gauges ?? [])
       .filter((g) =>
         [g.name, g.river, g.town].some((field) => field?.toLowerCase().includes(words))
       )
-      .slice(0, MOST);
+      .slice(0, MOST - found.length)
+      .map((g) => ({
+        href: `/station/${g.id}`,
+        title: g.name,
+        meta: [g.river, g.town, `${kindLabel[g.kind]} gauge`]
+      }));
+    return [...found, ...gauges];
   });
 
-  function pick(id: string) {
+  function pick(href: string) {
     open = false;
     query = '';
-    goto(`/station/${id}`, { reset: false });
+    goto(href, { reset: false });
   }
 
   function onkeydown(event: KeyboardEvent) {
@@ -34,7 +62,7 @@
       active = (active + (event.key === 'ArrowDown' ? 1 : matches.length - 1)) % matches.length;
     } else if (event.key === 'Enter') {
       event.preventDefault();
-      pick(matches[Math.min(active, matches.length - 1)].id);
+      pick(matches[Math.min(active, matches.length - 1)].href);
     } else if (event.key === 'Escape') {
       open = false;
     }
@@ -53,22 +81,22 @@
     aria-controls="found"
     aria-activedescendant={open && matches.length ? `found-${active}` : undefined}
     bind:value={query}
+    onfocus={fetchRivers}
     oninput={() => ((open = true), (active = 0))}
     onblur={() => (open = false)}
     {onkeydown}
   />
   {#if open && matches.length}
-    <ul id="found" role="listbox" aria-label="Matching gauges">
-      {#each matches as gauge, i (gauge.id)}
+    <ul id="found" role="listbox" aria-label="Matching rivers and gauges">
+      {#each matches as match, i (match.href)}
         <li
           id="found-{i}"
           role="option"
           aria-selected={i === active}
-          onpointerdown={(event) => (event.preventDefault(), pick(gauge.id))}
+          onpointerdown={(event) => (event.preventDefault(), pick(match.href))}
         >
-          <strong>{gauge.name}</strong>
-          <span>{[gauge.river, gauge.town, kindLabel[gauge.kind]].filter(Boolean).join(' · ')}</span
-          >
+          <strong>{match.title}</strong>
+          <span>{match.meta.filter(Boolean).join(' · ')}</span>
         </li>
       {/each}
     </ul>

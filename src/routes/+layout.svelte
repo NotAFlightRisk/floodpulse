@@ -1,6 +1,8 @@
 <script lang="ts">
   import { onMount } from 'svelte';
+  import { goto } from '$app/navigation';
   import { page } from '$app/state';
+  import ExternalLink from '#lib/components/ExternalLink.svelte';
   import Key from '#lib/components/Key.svelte';
   import Map from '#lib/components/Map.svelte';
   import Masthead from '#lib/components/Masthead.svelte';
@@ -16,6 +18,7 @@
     title
   } from '#lib/meta.js';
   import { loadPlausible } from '#lib/plausible.js';
+  import { provideSpotlight, Spotlight } from '#lib/spotlight.svelte.js';
   import { Theme } from '#lib/theme.svelte.js';
   import type { Picked, Shown } from '#lib/types.js';
   import '../app.css';
@@ -23,22 +26,30 @@
   let { data, children } = $props();
 
   const feed = provideFeed(new Feed());
+  const spotlight = provideSpotlight(new Spotlight());
   const theme = new Theme();
   let shown: Shown = $state({
     river: true,
     tidal: true,
     ground: false,
     rain: false,
-    warnings: true,
-    relief: false
+    warnings: true
   });
 
+  const KINDS = ['station', 'warning', 'rain', 'river'];
   const picked = $derived.by((): Picked | undefined => {
-    const kind = page.route.id?.split('/')[1];
-    return page.params.id && (kind === 'station' || kind === 'warning' || kind === 'rain')
-      ? { kind, id: page.params.id }
-      : undefined;
+    const kind = page.route.id?.split('/')[1] as Picked['kind'];
+    const id = page.params.id ?? page.params.slug;
+    return id && KINDS.includes(kind) ? { kind, id } : undefined;
   });
+
+  // Esc steps back out to the overview, unless someone's typing
+  function onkeydown(event: KeyboardEvent) {
+    const { target } = event;
+    const typing =
+      target instanceof Element && target.closest('input, select, textarea, [contenteditable]');
+    if (event.key === 'Escape' && picked && !typing && !event.defaultPrevented) goto('/');
+  }
 
   onMount(() => {
     loadPlausible();
@@ -61,13 +72,23 @@
   {@html `<script type="application/ld+json">${structuredData}</script>`}
 </svelte:head>
 
+<svelte:window {onkeydown} />
+
 <div class="atlas" class:picked>
   <header class="head">
     <Masthead summary={data.summary} {feed} {theme} picked={Boolean(picked)} />
   </header>
 
-  <section class="map" aria-label="Map of river gauges in England">
-    <Map live={feed.live} {picked} {shown} {theme} />
+  <section class="map" aria-label="Map of England's rivers and their gauges">
+    <Map
+      live={feed.live}
+      {picked}
+      river={page.data.river}
+      {shown}
+      {theme}
+      tiles={data.tiles}
+      {spotlight}
+    />
     <Key bind:shown />
   </section>
 
@@ -78,17 +99,25 @@
 
     <footer class="foot">
       <p>
-        Readings from the <a href="https://environment.data.gov.uk/flood-monitoring/doc/reference"
-          >Environment Agency</a
+        Readings from the <ExternalLink
+          href="https://environment.data.gov.uk/flood-monitoring/doc/reference"
+          >Environment Agency</ExternalLink
         >, under the
-        <a href="https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/"
-          >Open Government Licence</a
-        >. Map data © <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>
+        <ExternalLink
+          href="https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/"
+          >Open Government Licence</ExternalLink
+        >. Rivers from
+        <ExternalLink href="https://www.ordnancesurvey.co.uk/products/os-open-rivers"
+          >OS Open Rivers</ExternalLink
+        >, contains OS data © Crown copyright and database right 2026. Map data ©
+        <ExternalLink href="https://www.openstreetmap.org/copyright">OpenStreetMap</ExternalLink>
         contributors. Not an official service, so for anything that matters check
-        <a href={official}>Check for flooding</a> or call Floodline on 0345 988 1188.
+        <ExternalLink href={official}>Check for flooding</ExternalLink> or call Floodline on 0345 988
+        1188.
       </p>
       <p>
-        <a href={source}>Source on GitHub</a> · made by <a href="https://peng.ly">NotAFlightRisk</a>
+        <ExternalLink href={source}>Source on GitHub</ExternalLink> · made by
+        <ExternalLink href="https://peng.ly">NotAFlightRisk</ExternalLink>
       </p>
     </footer>
   </div>
@@ -104,7 +133,8 @@
 
     @media (width < 800px) {
       grid-template-columns: 1fr;
-      grid-template-rows: auto 58svh auto;
+      /* the map takes the rest of the first screen, with a peek of what's below */
+      grid-template-rows: auto max(50svh, 100svh - 15rem) auto;
       grid-template-areas: 'head' 'map' 'rail';
       height: auto;
 

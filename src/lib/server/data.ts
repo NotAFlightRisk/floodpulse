@@ -1,6 +1,6 @@
 import { error } from '@sveltejs/kit';
 import { waitUntil } from 'cloudflare:workers';
-import type { Live, Summary } from '#lib/types.js';
+import type { Gauge, Live, River, Summary } from '#lib/types.js';
 import { refresh } from './refresh.ts';
 import { report } from './report.ts';
 import { read, readJson } from './store.ts';
@@ -37,3 +37,10 @@ async function snapshot() {
 
 export const findGauge = async (id: string) => (await snapshot())?.gauges.find((g) => g.id === id);
 export const findRain = async (id: string) => (await snapshot())?.rain.find((r) => r.id === id);
+export const allGauges = async (): Promise<Gauge[]> => (await snapshot())?.gauges ?? [];
+
+/** The snapshot's gauges on one river, in order from its source */
+export async function gaugesOn({ stops }: River) {
+  const byId = new Map((await allGauges()).map((gauge) => [gauge.id, gauge]));
+  return stops.flatMap(({ id }) => byId.get(id) ?? []);
+}

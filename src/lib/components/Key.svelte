@@ -1,7 +1,7 @@
 <script lang="ts">
   import { MediaQuery } from 'svelte/reactivity';
-  import { stateLabel, trendLabel } from '#lib/format.js';
-  import type { Shown, State, Trend } from '#lib/types.js';
+  import { trendLabel } from '#lib/format.js';
+  import type { Shown, Trend } from '#lib/types.js';
   import Glyph from './Glyph.svelte';
 
   let { shown = $bindable() }: { shown: Shown } = $props();
@@ -11,10 +11,15 @@
     ['tidal', 'Tidal'],
     ['ground', 'Groundwater'],
     ['rain', 'Rain now'],
-    ['warnings', 'Warnings'],
-    ['relief', '3D relief']
+    ['warnings', 'Warnings']
   ];
-  const STATES: State[] = ['high', 'normal', 'low', 'unknown'];
+  const LINES = [
+    ['high', 'Above normal'],
+    ['normal', 'Normal'],
+    ['low', 'Below normal'],
+    ['faint', 'No gauge or range'],
+    ['rising', 'Rising']
+  ];
   const TRENDS: Trend[] = ['rising', 'steady', 'falling', 'unknown'];
 
   // open on a desktop, where there's room for it beside the map
@@ -37,12 +42,20 @@
         </label>
       {/each}
     </fieldset>
-    <ul aria-label="Colours">
-      {#each STATES as state (state)}
-        <li><Glyph trend="steady" {state} />{stateLabel[state]}</li>
+    <ul aria-label="River colours">
+      <li class="carved" aria-hidden="true">Rivers</li>
+      {#each LINES as [kind, label] (kind)}
+        <li>
+          <svg class="line {kind}" viewBox="0 0 20 8" aria-hidden="true">
+            <path d="M2 4h16" />
+            {#if kind === 'rising'}<path class="dashes" d="M2 4h16" />{/if}
+          </svg>
+          {label}
+        </li>
       {/each}
     </ul>
-    <ul aria-label="Shapes">
+    <ul aria-label="Gauge shapes">
+      <li class="carved" aria-hidden="true">Gauges</li>
       {#each TRENDS as trend (trend)}
         <li><Glyph {trend} state="unknown" />{trendLabel[trend]}</li>
       {/each}
@@ -122,6 +135,45 @@
 
   label {
     cursor: pointer;
+  }
+
+  li.carved {
+    font-size: 0.75rem;
+    color: var(--ink-soft);
+  }
+
+  .line {
+    flex: none;
+    width: 20px;
+    height: 8px;
+    fill: none;
+    stroke-width: 3;
+    stroke-linecap: round;
+
+    &.high {
+      stroke: var(--state-high);
+    }
+
+    &.normal,
+    &.rising {
+      stroke: var(--state-normal);
+    }
+
+    &.low {
+      stroke: var(--state-low);
+    }
+
+    &.faint {
+      stroke: var(--map-river);
+      opacity: 0.5;
+    }
+
+    .dashes {
+      stroke: var(--map-halo);
+      stroke-width: 1.5;
+      stroke-linecap: butt;
+      stroke-dasharray: 3 3;
+    }
   }
 
   input {
