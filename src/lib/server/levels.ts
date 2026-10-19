@@ -40,30 +40,34 @@ export function stateOf({ low, high }: Station, value: number | undefined): Stat
   return 'normal';
 }
 
+// a gauge that's gone quiet this long has no business saying which way it's heading
+const QUIET = 120;
+
 /** Joins the catalogue to the latest readings, moving each measure's trail along as it goes */
 export function readGauges(
   stations: Station[],
   readings: Map<string, { value: number; at: string }>,
-  trail: Trail
+  trail: Trail,
+  now = Date.now()
 ) {
   const next: Trail = {};
   const gauges = stations.map((station): Gauge => {
     const reading = readings.get(station.measure);
-    if (!reading) {
-      if (trail[station.measure]) next[station.measure] = trail[station.measure];
-      return { ...station, trend: 'unknown', state: 'unknown' };
-    }
-    const latest: Point = [minutes(reading.at), reading.value];
-    const points = extend(trail[station.measure], latest);
+    const points = reading
+      ? extend(trail[station.measure], [minutes(reading.at), reading.value])
+      : trail[station.measure];
+    if (!points?.length) return { ...station, trend: 'unknown', state: 'unknown' };
     next[station.measure] = points;
-    const delta = change(points, latest);
+    // the newest we've ever seen, in case the EA hands back an older one
+    const latest = points.at(-1)!;
+    const delta = now / 60_000 - latest[0] > QUIET ? undefined : change(points, latest);
     return {
       ...station,
-      value: reading.value,
-      at: reading.at,
+      value: latest[1],
+      at: new Date(latest[0] * 60_000).toISOString(),
       change: delta,
       trend: trendOf(delta),
-      state: stateOf(station, reading.value)
+      state: stateOf(station, latest[1])
     };
   });
   return { gauges, trail: next };

@@ -9,15 +9,19 @@ export class Feed {
   failed = $state(false);
   now = $state(Date.now());
 
+  #pending?: AbortController;
+
   async load() {
+    this.#pending?.abort();
+    const pending = (this.#pending = new AbortController());
     try {
       // no-cache, or the browser sits on one answer for as long as Cloudflare says it can
-      const res = await fetch('/api/live', { cache: 'no-cache' });
+      const res = await fetch('/api/live', { cache: 'no-cache', signal: pending.signal });
       if (!res.ok) throw new Error(`/api/live answered ${res.status}`);
       this.live = await res.json();
       this.failed = false;
     } catch {
-      this.failed = true;
+      if (!pending.signal.aborted) this.failed = true;
     }
   }
 

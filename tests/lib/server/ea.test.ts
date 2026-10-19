@@ -63,6 +63,14 @@ describe('toStation', () => {
 });
 
 describe('toReadings', () => {
+  it('keeps the newest of two readings for one measure', () => {
+    const readings = toReadings([
+      { measure: `${base}/measures/A-level`, dateTime: '2026-10-19T14:15:00Z', value: 1.3 },
+      { measure: `${base}/measures/A-level`, dateTime: '2026-10-19T14:00:00Z', value: 1.2 }
+    ]);
+    expect(readings.get('A-level')).toEqual({ value: 1.3, at: '2026-10-19T14:15:00Z' });
+  });
+
   it('keys by measure id and skips readings with no number', () => {
     const readings = toReadings([
       { measure: `${base}/measures/A-level`, dateTime: '2026-10-19T14:00:00Z', value: 1.2 },
@@ -90,7 +98,9 @@ describe('toWarning', () => {
     expect(warning?.message).toBe('River levels are rising.');
   });
 
-  it('drops warnings that are no longer in force', () => {
+  it("drops warnings that are no longer in force, or that don't say where or when", () => {
     expect(toWarning({ ...flood, severityLevel: 4 }, {})).toBeUndefined();
+    expect(toWarning({ ...flood, floodAreaID: undefined }, {})).toBeUndefined();
+    expect(toWarning({ ...flood, timeRaised: undefined }, {})).toBeUndefined();
   });
 });

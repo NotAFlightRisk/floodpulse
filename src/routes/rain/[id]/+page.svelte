@@ -2,11 +2,11 @@
   import { ago, clock, millimetres } from '#lib/format.js';
   import { useFeed } from '#lib/live.svelte.js';
   import { name } from '#lib/meta.js';
+  import { hourly, total } from '#lib/rain.js';
   import type { Point } from '#lib/types.js';
 
   let { data } = $props();
 
-  const HOURS = 24;
   const feed = useFeed();
   const gauge = $derived(feed.live?.rain.find((r) => r.id === data.gauge.id) ?? data.gauge);
   const measure = $derived(gauge.measure);
@@ -24,21 +24,8 @@
     return () => quit.abort();
   });
 
-  // each reading is the rain in the 15 minutes before it, so they add up into hours
-  const hours = $derived.by(() => {
-    if (!history) return [];
-    const end = Math.ceil(Date.now() / 3_600_000) * 60;
-    const totals = Array.from({ length: HOURS }, (_, i) => ({ at: end - (HOURS - i) * 60, mm: 0 }));
-    for (const [at, mm] of history) {
-      const slot = HOURS - Math.ceil((end - at) / 60);
-      if (slot >= 0 && slot < HOURS) totals[slot].mm += mm;
-    }
-    return totals;
-  });
-  const total = (since: number) =>
-    (history ?? [])
-      .filter(([at]) => at > Date.now() / 60_000 - since)
-      .reduce((sum, [, mm]) => sum + mm, 0);
+  const hours = $derived(history ? hourly(history, feed.now) : []);
+  const sum = (minutes: number) => total(history ?? [], feed.now, minutes);
   const tallest = $derived(Math.max(1, ...hours.map((hour) => hour.mm)));
 </script>
 
@@ -64,9 +51,9 @@
     <h2 class="carved rule">Last 24 hours</h2>
     {#if history}
       <svg
-        viewBox="0 0 {HOURS * 12} 80"
+        viewBox="0 0 {hours.length * 12} 80"
         role="img"
-        aria-label="{millimetres(total(1440))} over the last 24 hours"
+        aria-label="{millimetres(sum(1440))} over the last 24 hours"
       >
         {#each hours as hour, i (hour.at)}
           <rect
@@ -79,11 +66,11 @@
       </svg>
       <dl>
         <dt>Last hour</dt>
-        <dd>{millimetres(total(60))}</dd>
+        <dd>{millimetres(sum(60))}</dd>
         <dt>Last 24 hours</dt>
-        <dd>{millimetres(total(1440))}</dd>
+        <dd>{millimetres(sum(1440))}</dd>
         <dt>Last 5 days</dt>
-        <dd>{millimetres(total(7200))}</dd>
+        <dd>{millimetres(sum(7200))}</dd>
       </dl>
       <p class="note">Missing readings count as nothing, so these are the least it rained.</p>
     {:else}

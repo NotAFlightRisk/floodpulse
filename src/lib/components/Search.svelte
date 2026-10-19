@@ -34,7 +34,7 @@
       active = (active + (event.key === 'ArrowDown' ? 1 : matches.length - 1)) % matches.length;
     } else if (event.key === 'Enter') {
       event.preventDefault();
-      pick(matches[active].id);
+      pick(matches[Math.min(active, matches.length - 1)].id);
     } else if (event.key === 'Escape') {
       open = false;
     }

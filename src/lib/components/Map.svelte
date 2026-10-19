@@ -29,7 +29,8 @@
 
   let container: HTMLDivElement;
   let map = $state.raw<Map>();
-  let outlined = new Set<string>();
+  // the built-in Map, since maplibre's has the name in here
+  const outlines = new globalThis.Map<string, Promise<Feature[]>>();
 
   const point = (lon: number, lat: number) => ({ type: 'Point' as const, coordinates: [lon, lat] });
   const collection = <T,>(features: T[]) => ({ type: 'FeatureCollection' as const, features });
@@ -211,29 +212,35 @@
     });
   }
 
-  // flood area outlines are big, so only the ones in view get fetched, and only close up
+  // a failed outline is forgotten, so the next pan has another go
+  const fetchOutline = (id: string): Promise<Feature[]> =>
+    fetch(`/api/areas/${id}`)
+      .then((res) => (res.ok ? res.json() : Promise.reject(new Error(`outline ${res.status}`))))
+      .then(({ features }) => features)
+      .catch(() => {
+        outlines.delete(id);
+        return [];
+      });
+
+  // flood area outlines are big, so each is fetched once, and only when it's in view close up
   async function outline(target: Map) {
-    if (!live || target.getZoom() < OUTLINES_FROM) return;
-    const bounds = target.getBounds();
-    const wanted = live.warnings.filter(
-      (w) => w.lat !== undefined && !outlined.has(w.id) && bounds.contains([w.lon!, w.lat!])
+    const data = live;
+    if (!data) return;
+    if (target.getZoom() >= OUTLINES_FROM) {
+      const bounds = target.getBounds();
+      for (const w of data.warnings)
+        if (w.lat !== undefined && !outlines.has(w.id) && bounds.contains([w.lon!, w.lat]))
+          outlines.set(w.id, fetchOutline(w.id));
+    }
+    const drawn = await Promise.all(
+      data.warnings
+        .filter((w) => outlines.has(w.id))
+        .map(async (w) =>
+          (await outlines.get(w.id)!).map((f) => ({ ...f, properties: { severity: w.severity } }))
+        )
     );
-    if (!wanted.length) return;
-    wanted.forEach((w) => outlined.add(w.id));
-    const loaded = await Promise.all(
-      wanted.map(async (w) => {
-        const res = await fetch(`/api/areas/${w.id}`);
-        if (!res.ok) return [];
-        const { features } = await res.json();
-        return features.map((f: Feature) => ({
-          ...f,
-          properties: { severity: w.severity }
-        }));
-      })
-    );
-    const source = target.getSource<GeoJSONSource>('outlines')!;
-    const current = (await source.getData()) as FeatureCollection;
-    source.setData(collection([...current.features, ...loaded.flat()]));
+    if (data === live)
+      target.getSource<GeoJSONSource>('outlines')?.setData(collection(drawn.flat()));
   }
 
   const go = (kind: Picked['kind']) => (event: MapLayerMouseEvent) => {
@@ -243,8 +250,10 @@
 
   onMount(() => {
     let target: Map | undefined;
+    let gone = false;
     import('maplibre-gl').then(
       ({ Map, Popup, NavigationControl, AttributionControl, setWorkerUrl }) => {
+        if (gone) return;
         setWorkerUrl(worker);
         target = new Map({
           container,
@@ -277,7 +286,10 @@
         });
       }
     );
-    return () => target?.remove();
+    return () => {
+      gone = true;
+      target?.remove();
+    };
   });
 
   $effect(() => {
@@ -285,8 +297,6 @@
     map.getSource<GeoJSONSource>('gauges')!.setData(gauges(live));
     map.getSource<GeoJSONSource>('rain')!.setData(rain(live));
     map.getSource<GeoJSONSource>('warnings')!.setData(warnings(live));
-    outlined = new Set();
-    map.getSource<GeoJSONSource>('outlines')!.setData(collection([]));
     outline(map);
   });
 
