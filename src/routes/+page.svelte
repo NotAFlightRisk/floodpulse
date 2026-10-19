@@ -1,13 +1,12 @@
 <script lang="ts">
   import { flip } from 'svelte/animate';
   import { MediaQuery } from 'svelte/reactivity';
-  import ExternalLink from '#lib/components/ExternalLink.svelte';
   import Glyph from '#lib/components/Glyph.svelte';
+  import Key from '#lib/components/Key.svelte';
   import Plaque from '#lib/components/Plaque.svelte';
   import RiverProfile from '#lib/components/RiverProfile.svelte';
   import { ago, metres, severityLabel, signed } from '#lib/format.js';
   import { useFeed } from '#lib/live.svelte.js';
-  import { official } from '#lib/meta.js';
   import { current } from '#lib/rivers.js';
   import { summarise } from '#lib/summary.js';
   import type { River } from '#lib/types.js';
@@ -53,10 +52,12 @@
         {/each}
       </ul>
     {:else}
-      <p class="calm">
-        None in force anywhere in England right now. That's the Environment Agency's word, and
-        <ExternalLink href={official}>Check for flooding</ExternalLink> is where they'd say otherwise
-        first.
+      <p class="calm clear">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <circle cx="12" cy="12" r="10" />
+          <path d="m7 12.5 3.5 3.5L17 8.5" />
+        </svg>
+        None right now
       </p>
     {/if}
   </section>
@@ -112,21 +113,7 @@
 
   <section aria-labelledby="reading">
     <h2 class="carved rule" id="reading">Reading the map</h2>
-    <p>
-      Every river is coloured by the Environment Agency gauge watching that stretch, by where its
-      level sits against that gauge's own normal range, so a deep river and a shallow brook compare
-      fairly. Rivers get wider as they get bigger, and a faint one has no gauge, or no normal to go
-      by. Dashes walking downstream mean it's rising.
-    </p>
-    <p>
-      Zoom in and the gauges show up too, shaped by whether they've gone up or down over the last
-      three hours. Point at a river to see its gauge, or pick one to follow it to the sea.
-    </p>
-    <p>
-      Red and amber plaques are the EA's own flood warnings and alerts, which cover areas rather
-      than gauges. A river above normal isn't a warning by itself, and no warning doesn't mean no
-      risk.
-    </p>
+    <Key />
   </section>
 </div>
 
@@ -153,6 +140,30 @@
 
   .calm {
     color: var(--ink);
+  }
+
+  .clear {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+
+    svg {
+      flex: none;
+      width: 1.5em;
+      height: 1.5em;
+    }
+
+    circle {
+      fill: var(--clear);
+    }
+
+    path {
+      fill: none;
+      stroke: var(--on-plaque);
+      stroke-width: 2.5;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
   }
 
   .note {

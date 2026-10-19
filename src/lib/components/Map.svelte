@@ -67,12 +67,12 @@
   const collection = <T,>(features: T[]) => ({ type: 'FeatureCollection' as const, features });
   const reach = (id: string) => ({ source: SOURCE, sourceLayer: LAYER, id });
   const whole = (id: number) => ({ source: WHOLE, sourceLayer: LAYER, id });
-  // room for the key strip along the bottom on a desktop
+  // room for the layers strip along the bottom on a desktop
   const padding = (around: number) => ({
     top: around,
     right: around,
     left: around,
-    bottom: wide.current ? around + 94 : around
+    bottom: wide.current ? around + 58 : around
   });
 
   const gauges = (data: Live) =>
