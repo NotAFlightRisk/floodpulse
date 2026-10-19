@@ -46,9 +46,17 @@ describe('toStation', () => {
     expect(station).toMatchObject({ low: -0.5, high: 0.1, kind: 'river' });
   });
 
+  it('places a borehole that only has a grid square', () => {
+    const borehole = { ...raw, lat: undefined, long: undefined, gridReference: 'TQ3910' };
+    expect(toStation(borehole)).toMatchObject({
+      lat: expect.closeTo(50.877, 2),
+      lon: expect.closeTo(-0.017, 2)
+    });
+  });
+
   it("skips closed stations, missing ids or coordinates, and measures that aren't in metres", () => {
     expect(toStation({ ...raw, status: `${base}/def/core/statusClosed` })).toBeUndefined();
-    expect(toStation({ ...raw, lat: undefined })).toBeUndefined();
+    expect(toStation({ ...raw, lat: undefined, long: undefined })).toBeUndefined();
     expect(toStation({ ...raw, notation: '' })).toBeUndefined();
     expect(toStation({ ...raw, measures: measure('Stage', 'V') })).toBeUndefined();
   });

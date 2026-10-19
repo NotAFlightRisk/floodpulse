@@ -1,4 +1,5 @@
 import type { Kind, Mark, RainStation, Severity, Station, Warning } from '#lib/types.js';
+import { fromGrid } from './grid.ts';
 
 export const EA = 'https://environment.data.gov.uk/flood-monitoring';
 
@@ -40,10 +41,16 @@ const mark = (raw: unknown): Mark | undefined => {
   return value === undefined || !date ? undefined : { value, date };
 };
 
+// most boreholes only come with a 1 km grid square, so that'll have to do
+const place = (raw: Raw) => {
+  const [lat, lon] = [num(raw.lat), num(raw.long)];
+  const grid = text(raw.gridReference);
+  return lat !== undefined && lon !== undefined ? [lat, lon] : grid ? fromGrid(grid) : undefined;
+};
+
 export function toStation(raw: Raw): Station | undefined {
   const id = text(raw.notation);
-  const lat = num(raw.lat);
-  const lon = num(raw.long);
+  const [lat, lon] = place(raw) ?? [];
   if (!id || lat === undefined || lon === undefined || tail(raw.status) === 'statusClosed') return;
   const measures = list(raw.measures).filter((m) => text(m.unitName)?.startsWith('m'));
   for (const [qualifier, kind, scaleKey] of QUALIFIERS) {
