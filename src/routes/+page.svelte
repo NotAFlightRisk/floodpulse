@@ -1,13 +1,11 @@
 <script lang="ts">
   import { flip } from 'svelte/animate';
   import { MediaQuery } from 'svelte/reactivity';
-  import ExternalLink from '#lib/components/ExternalLink.svelte';
   import Glyph from '#lib/components/Glyph.svelte';
   import Plaque from '#lib/components/Plaque.svelte';
   import RiverProfile from '#lib/components/RiverProfile.svelte';
   import { ago, metres, severityLabel, signed } from '#lib/format.js';
   import { useFeed } from '#lib/live.svelte.js';
-  import { official } from '#lib/meta.js';
   import { current } from '#lib/rivers.js';
   import { summarise } from '#lib/summary.js';
   import type { River } from '#lib/types.js';
@@ -53,10 +51,12 @@
         {/each}
       </ul>
     {:else}
-      <p class="calm">
-        None in force anywhere in England right now. That's the Environment Agency's word, and
-        <ExternalLink href={official}>Check for flooding</ExternalLink> is where they'd say otherwise
-        first.
+      <p class="calm clear">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <circle cx="12" cy="12" r="10" />
+          <path d="m7 12.5 3.5 3.5L17 8.5" />
+        </svg>
+        None right now
       </p>
     {/if}
   </section>
@@ -153,6 +153,30 @@
 
   .calm {
     color: var(--ink);
+  }
+
+  .clear {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+
+    svg {
+      flex: none;
+      width: 1.5em;
+      height: 1.5em;
+    }
+
+    circle {
+      fill: var(--clear);
+    }
+
+    path {
+      fill: none;
+      stroke: var(--on-plaque);
+      stroke-width: 2.5;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
   }
 
   .note {

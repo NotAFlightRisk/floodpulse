@@ -24,6 +24,7 @@
   --severe: light-dark(#7d1022, #f0566d);
   --warning: light-dark(#c62632, #ff7469);
   --alert: light-dark(#c77700, #f2a630);
+  --clear: light-dark(#2e7d3a, #6fcf7f);
   --on-plaque: light-dark(#fff, #14191b);
 
   --map-land: light-dark(#dfe2dc, #171d1f);
