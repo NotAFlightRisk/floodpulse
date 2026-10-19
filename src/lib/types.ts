@@ -79,6 +79,32 @@ export interface Summary {
   risers: Gauge[];
 }
 
+/** Where a gauge sits along its river, in kilometres from the source */
+export interface Stop {
+  id: string;
+  km: number;
+}
+
+/** A river with a gauge on it, and every gauge along it from source to mouth */
+export interface River {
+  index: number;
+  slug: string;
+  name: string;
+  length: number;
+  bounds: [number, number, number, number];
+  into?: { slug: string; name: string; km: number };
+  sea?: boolean;
+  stops: Stop[];
+}
+
+/** Just enough of a river to find it by name */
+export interface RiverName {
+  slug: string;
+  name: string;
+  gauges: number;
+  into?: string;
+}
+
 /** [epoch minutes, value] */
 export type Point = [number, number];
 
@@ -93,6 +119,6 @@ export interface Shown {
 }
 
 export interface Picked {
-  kind: 'station' | 'warning' | 'rain';
+  kind: 'station' | 'warning' | 'rain' | 'river';
   id: string;
 }

@@ -30,6 +30,21 @@
   const y = (value: number) =>
     TOP + (1 - (value - scale.from) / (scale.to - scale.from)) * (HEIGHT - TOP - FOOT);
 
+  // labels for marks too close to read get nudged down, while each line stays where it belongs
+  const labelled = $derived.by(() => {
+    const items = [
+      ...marks.map((mark) => ({ key: mark.label, at: y(mark.value), above: 12, below: 14 })),
+      ...(gauge.value === undefined ? [] : [{ key: 'now', at: y(gauge.value), above: 6, below: 7 }])
+    ].sort((a, b) => a.at - b.at);
+    const spots: Record<string, number> = {};
+    let floor = -Infinity;
+    for (const { key, at, above, below } of items) {
+      spots[key] = Math.max(at, floor + above + 2);
+      floor = spots[key] + below;
+    }
+    return spots;
+  });
+
   const ticks = $derived.by(() => {
     const span = scale.to - scale.from;
     const step = [0.1, 0.25, 0.5, 1, 2, 5, 10].find((size) => span / size <= 8) ?? 20;
@@ -75,13 +90,17 @@
           <line x1="40" x2="136" y1={y(gauge.value)} y2={y(gauge.value)} />
         </g>
       </g>
-      <text class="now" x="146" y={y(gauge.value) + 5}>NOW {metres(gauge.value)}</text>
+      <text class="now" x="146" y={labelled.now + 5}>NOW {metres(gauge.value)}</text>
     {/if}
     {#each marks as mark (mark.label)}
       <g class="mark">
         <line x1="40" x2="146" y1={y(mark.value)} y2={y(mark.value)} />
-        <text x="152" y={y(mark.value) - 3}>{mark.label.toUpperCase()} {metres(mark.value)}</text>
-        <text class="when" x="152" y={y(mark.value) + 11}>{date(mark.date).toUpperCase()}</text>
+        <text x="152" y={labelled[mark.label] - 3}
+          >{mark.label.toUpperCase()} {metres(mark.value)}</text
+        >
+        <text class="when" x="152" y={labelled[mark.label] + 11}
+          >{date(mark.date).toUpperCase()}</text
+        >
       </g>
     {/each}
   </svg>

@@ -3,16 +3,28 @@
   import { MediaQuery } from 'svelte/reactivity';
   import Glyph from '#lib/components/Glyph.svelte';
   import Plaque from '#lib/components/Plaque.svelte';
+  import RiverProfile from '#lib/components/RiverProfile.svelte';
   import { ago, metres, severityLabel, signed } from '#lib/format.js';
   import { useFeed } from '#lib/live.svelte.js';
   import { official } from '#lib/meta.js';
+  import { current } from '#lib/rivers.js';
   import { summarise } from '#lib/summary.js';
+  import type { River } from '#lib/types.js';
 
   let { data } = $props();
 
   const feed = useFeed();
   const calm = new MediaQuery('prefers-reduced-motion: reduce');
   const latest = $derived(feed.live ? summarise(feed.live) : data.summary);
+  const lookup = $derived(new Map(feed.live?.gauges.map((g) => [g.id, g])));
+
+  function said({ stops, length }: River) {
+    if (!feed.live) return `${stops.length} gauges over ${length} km`;
+    const high = stops.filter((stop) => current(lookup.get(stop.id), feed.now) === 'high').length;
+    return high
+      ? `${high} of ${stops.length} gauges above normal`
+      : `${stops.length} gauges, none above normal`;
+  }
 </script>
 
 <div class="overview">
@@ -71,12 +83,39 @@
     {/if}
   </section>
 
+  <section aria-labelledby="rivers">
+    <h2 class="carved rule" id="rivers">Rivers</h2>
+    <ul class="list">
+      {#each data.rivers as river (river.slug)}
+        <li>
+          <a href="/river/{river.slug}">
+            <span>
+              <strong>{river.name}</strong>
+              <small>{said(river)}</small>
+            </span>
+            {#if feed.live}
+              <span class="shape"
+                ><RiverProfile {river} gauges={lookup} now={feed.now} small /></span
+              >
+            {/if}
+          </a>
+        </li>
+      {/each}
+    </ul>
+    <p class="note">The ones running highest first, then the longest. Search finds the rest.</p>
+  </section>
+
   <section aria-labelledby="reading">
     <h2 class="carved rule" id="reading">Reading the map</h2>
     <p>
-      Every mark is an Environment Agency gauge. Its colour says where the level sits against that
-      gauge's own normal range, so a deep river and a shallow brook compare fairly. Its shape says
-      whether it's gone up or down over the last three hours.
+      Every river is coloured by the Environment Agency gauge watching that stretch, by where its
+      level sits against that gauge's own normal range, so a deep river and a shallow brook compare
+      fairly. Rivers get wider as they get bigger, and a faint one has no gauge, or no normal to go
+      by. Dashes walking downstream mean it's rising.
+    </p>
+    <p>
+      Zoom in and the gauges show up too, shaped by whether they've gone up or down over the last
+      three hours. Point at a river to see its gauge, or pick one to follow it to the sea.
     </p>
     <p>
       Red and amber plaques are the EA's own flood warnings and alerts, which cover areas rather
@@ -142,6 +181,11 @@
       display: grid;
       flex: 1;
       min-width: 0;
+    }
+
+    .shape {
+      flex: none;
+      width: 132px;
     }
 
     small {

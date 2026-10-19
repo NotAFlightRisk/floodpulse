@@ -2,18 +2,15 @@ import { describe, expect, it } from 'vitest';
 import { fromGrid } from '../../../src/lib/server/grid.ts';
 
 describe('fromGrid', () => {
-  it('agrees with the EA, which publishes both for most river gauges', () => {
-    // Ardingly (E8266) is TQ3328828283 at 51.038451, -0.100268 on WGS84
-    const [lat, lon] = fromGrid('TQ3328828283')!;
-    expect(lat).toBeCloseTo(51.03845, 2);
-    expect(lon).toBeCloseTo(-0.10027, 2);
-  });
-
-  it("finds the OS's own worked example to within a hundred metres", () => {
-    // TG 51401 13177 is 52 39 27.2531 N, 1 43 4.5177 E on OSGB36
-    const [lat, lon] = fromGrid('TG5140113177')!;
-    expect(lat).toBeCloseTo(52.65757, 3);
-    expect(lon).toBeCloseTo(1.71792, 3);
+  // the EA publishes both for most river gauges, so they make a handy answer sheet
+  it.each([
+    ['TQ3328828283', 51.038451, -0.100268],
+    ['SW 46760 28560', 50.10302, -5.54277],
+    ['SO4318882677', 52.439087, -2.837158]
+  ])('puts %s where the EA does, to within a few metres', (reference, lat, lon) => {
+    const [gotLat, gotLon] = fromGrid(reference)!;
+    expect(gotLat).toBeCloseTo(lat, 4);
+    expect(gotLon).toBeCloseTo(lon, 4);
   });
 
   it('refuses references it cannot read', () => {

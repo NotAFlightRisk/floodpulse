@@ -1,7 +1,9 @@
 <script lang="ts">
   import Glyph from '#lib/components/Glyph.svelte';
   import Hydrograph from '#lib/components/Hydrograph.svelte';
+  import Neighbour from '#lib/components/Neighbour.svelte';
   import Pier from '#lib/components/Pier.svelte';
+  import RiverProfile from '#lib/components/RiverProfile.svelte';
   import {
     ago,
     clock,
@@ -17,6 +19,7 @@
   import { fetchHistory } from '#lib/history.js';
   import { useFeed } from '#lib/live.svelte.js';
   import { name, official } from '#lib/meta.js';
+  import { neighbours } from '#lib/rivers.js';
   import type { Point } from '#lib/types.js';
 
   let { data } = $props();
@@ -35,6 +38,10 @@
       ? 'no reading'
       : `${metres(gauge.value)}, ${stateLabel[gauge.state].toLowerCase()}`
   );
+
+  const lookup = $derived(new Map((feed.live?.gauges ?? data.gauges).map((g) => [g.id, g])));
+  const here = $derived(data.river?.stops.find((stop) => stop.id === gauge.id));
+  const near = $derived(data.river ? neighbours(data.river.stops, gauge.id) : {});
 
   const measure = $derived(gauge.measure);
   let history = $state.raw<Point[]>();
@@ -103,6 +110,38 @@
       </p>
     {/if}
   </section>
+
+  {#if data.river && here}
+    <section>
+      <h2 class="carved rule">Along the {data.river.name}</h2>
+      <RiverProfile river={data.river} gauges={lookup} now={feed.now} here={gauge.id} />
+      {#if near.up || near.down}
+        <nav class="along" aria-label="Next gauges along the {data.river.name}">
+          {#if near.up}
+            <Neighbour
+              stop={near.up}
+              gauge={lookup.get(near.up.id)}
+              way="Upriver"
+              km={here.km - near.up.km}
+              now={feed.now}
+            />
+          {/if}
+          {#if near.down}
+            <Neighbour
+              stop={near.down}
+              gauge={lookup.get(near.down.id)}
+              way="Downriver"
+              km={near.down.km - here.km}
+              now={feed.now}
+            />
+          {/if}
+        </nav>
+      {/if}
+      <a class="whole" href="/river/{data.river.slug}"
+        >All {data.river.stops.length} gauges on the {data.river.name}</a
+      >
+    </section>
+  {/if}
 
   <dl>
     {#if gauge.low !== undefined && gauge.high !== undefined}
@@ -204,6 +243,21 @@
   h2 {
     font-size: 0.75rem;
     color: var(--ink-soft);
+  }
+
+  .along {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-2);
+
+    > :global(:only-child[rel='next']) {
+      grid-column: 2;
+    }
+  }
+
+  .whole {
+    justify-self: start;
+    font-size: 0.875rem;
   }
 
   dl {

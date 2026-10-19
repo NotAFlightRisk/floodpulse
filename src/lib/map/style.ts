@@ -35,7 +35,6 @@ export const palette = (): Palette =>
 
 const OSM = 'openmaptiles';
 const sans = ['Noto Sans Regular'];
-const italic = ['Noto Sans Italic'];
 const width = (stops: number[]) => ['interpolate', ['exponential', 1.5], ['zoom'], ...stops];
 
 // [layer, paint property, token], so a theme change can repaint without rebuilding the style
@@ -46,12 +45,8 @@ export const PAINT: [string, string, Token][] = [
   ['relief', 'hillshade-highlight-color', 'light'],
   ['relief', 'hillshade-accent-color', 'shade'],
   ['water', 'fill-color', 'water'],
-  ['rivers', 'line-color', 'river'],
-  ['streams', 'line-color', 'river'],
   ['roads', 'line-color', 'road'],
   ['borders', 'line-color', 'border'],
-  ['river-names', 'text-color', 'river'],
-  ['river-names', 'text-halo-color', 'halo'],
   ['places', 'text-color', 'label'],
   ['places', 'text-halo-color', 'halo']
 ];
@@ -73,24 +68,6 @@ const LAYERS = [
   },
   { id: 'water', type: 'fill', source: OSM, 'source-layer': 'water' },
   {
-    id: 'streams',
-    type: 'line',
-    source: OSM,
-    'source-layer': 'waterway',
-    minzoom: 10,
-    filter: ['in', ['get', 'class'], ['literal', ['stream', 'drain', 'ditch']]],
-    paint: { 'line-width': width([10, 0.4, 15, 1.5]), 'line-opacity': 0.7 }
-  },
-  {
-    id: 'rivers',
-    type: 'line',
-    source: OSM,
-    'source-layer': 'waterway',
-    filter: ['in', ['get', 'class'], ['literal', ['river', 'canal']]],
-    layout: { 'line-cap': 'round', 'line-join': 'round' },
-    paint: { 'line-width': width([5, 1.2, 8, 1.6, 13, 3, 16, 6]) }
-  },
-  {
     id: 'roads',
     type: 'line',
     source: OSM,
@@ -106,22 +83,6 @@ const LAYERS = [
     'source-layer': 'boundary',
     filter: ['all', ['<=', ['get', 'admin_level'], 4], ['!=', ['get', 'maritime'], 1]],
     paint: { 'line-width': 1, 'line-dasharray': [3, 2] }
-  },
-  {
-    id: 'river-names',
-    type: 'symbol',
-    source: OSM,
-    'source-layer': 'waterway',
-    minzoom: 10,
-    filter: ['all', ['has', 'name'], ['in', ['get', 'class'], ['literal', ['river', 'canal']]]],
-    layout: {
-      'symbol-placement': 'line',
-      'text-field': ['get', 'name:en'],
-      'text-font': italic,
-      'text-size': 12,
-      'text-letter-spacing': 0.05
-    },
-    paint: { 'text-halo-width': 1.5 }
   },
   {
     id: 'places',

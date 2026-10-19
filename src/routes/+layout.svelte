@@ -16,6 +16,7 @@
     title
   } from '#lib/meta.js';
   import { loadPlausible } from '#lib/plausible.js';
+  import { provideSpotlight, Spotlight } from '#lib/spotlight.svelte.js';
   import { Theme } from '#lib/theme.svelte.js';
   import type { Picked, Shown } from '#lib/types.js';
   import '../app.css';
@@ -23,6 +24,7 @@
   let { data, children } = $props();
 
   const feed = provideFeed(new Feed());
+  const spotlight = provideSpotlight(new Spotlight());
   const theme = new Theme();
   let shown: Shown = $state({
     river: true,
@@ -33,11 +35,11 @@
     relief: false
   });
 
+  const KINDS = ['station', 'warning', 'rain', 'river'];
   const picked = $derived.by((): Picked | undefined => {
-    const kind = page.route.id?.split('/')[1];
-    return page.params.id && (kind === 'station' || kind === 'warning' || kind === 'rain')
-      ? { kind, id: page.params.id }
-      : undefined;
+    const kind = page.route.id?.split('/')[1] as Picked['kind'];
+    const id = page.params.id ?? page.params.slug;
+    return id && KINDS.includes(kind) ? { kind, id } : undefined;
   });
 
   onMount(() => {
@@ -67,7 +69,15 @@
   </header>
 
   <section class="map" aria-label="Map of river gauges in England">
-    <Map live={feed.live} {picked} {shown} {theme} />
+    <Map
+      live={feed.live}
+      {picked}
+      river={page.data.river}
+      {shown}
+      {theme}
+      tiles={data.tiles}
+      {spotlight}
+    />
     <Key bind:shown />
   </section>
 
@@ -83,8 +93,11 @@
         >, under the
         <a href="https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/"
           >Open Government Licence</a
-        >. Map data © <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>
-        contributors. Not an official service, so for anything that matters check
+        >. Rivers from
+        <a href="https://www.ordnancesurvey.co.uk/products/os-open-rivers">OS Open Rivers</a>,
+        contains OS data © Crown copyright and database right 2026. Map data ©
+        <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors. Not an
+        official service, so for anything that matters check
         <a href={official}>Check for flooding</a> or call Floodline on 0345 988 1188.
       </p>
       <p>
