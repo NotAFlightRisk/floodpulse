@@ -163,6 +163,8 @@
 
   .rail {
     grid-area: rail;
+    /* holds the hidden link hints in its scroll, rather than stretching the page */
+    position: relative;
     display: grid;
     grid-template-rows: 1fr auto;
     overflow-y: auto;
