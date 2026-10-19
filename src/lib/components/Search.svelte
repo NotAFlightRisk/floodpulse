@@ -90,7 +90,7 @@
     border-radius: var(--radius);
 
     &::placeholder {
-      color: var(--ink-faint);
+      color: var(--ink-soft);
     }
   }
 
