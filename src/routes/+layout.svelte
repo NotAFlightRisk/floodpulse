@@ -3,7 +3,7 @@
   import { goto } from '$app/navigation';
   import { page } from '$app/state';
   import ExternalLink from '#lib/components/ExternalLink.svelte';
-  import Key from '#lib/components/Key.svelte';
+  import Layers from '#lib/components/Layers.svelte';
   import Map from '#lib/components/Map.svelte';
   import Masthead from '#lib/components/Masthead.svelte';
   import { Feed, provideFeed } from '#lib/live.svelte.js';
@@ -89,7 +89,7 @@
       tiles={data.tiles}
       {spotlight}
     />
-    <Key bind:shown />
+    <Layers bind:shown />
   </section>
 
   <div class="rail">

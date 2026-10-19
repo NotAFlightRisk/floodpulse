@@ -2,6 +2,7 @@
   import { flip } from 'svelte/animate';
   import { MediaQuery } from 'svelte/reactivity';
   import Glyph from '#lib/components/Glyph.svelte';
+  import Key from '#lib/components/Key.svelte';
   import Plaque from '#lib/components/Plaque.svelte';
   import RiverProfile from '#lib/components/RiverProfile.svelte';
   import { ago, metres, severityLabel, signed } from '#lib/format.js';
@@ -112,21 +113,7 @@
 
   <section aria-labelledby="reading">
     <h2 class="carved rule" id="reading">Reading the map</h2>
-    <p>
-      Every river is coloured by the Environment Agency gauge watching that stretch, by where its
-      level sits against that gauge's own normal range, so a deep river and a shallow brook compare
-      fairly. Rivers get wider as they get bigger, and a faint one has no gauge, or no normal to go
-      by. Dashes walking downstream mean it's rising.
-    </p>
-    <p>
-      Zoom in and the gauges show up too, shaped by whether they've gone up or down over the last
-      three hours. Point at a river to see its gauge, or pick one to follow it to the sea.
-    </p>
-    <p>
-      Red and amber plaques are the EA's own flood warnings and alerts, which cover areas rather
-      than gauges. A river above normal isn't a warning by itself, and no warning doesn't mean no
-      risk.
-    </p>
+    <Key />
   </section>
 </div>
 
