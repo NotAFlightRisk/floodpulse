@@ -1,0 +1,140 @@
+@import '@fontsource-variable/mona-sans/wdth.css';
+
+:root {
+  color-scheme: light dark;
+
+  --ground: light-dark(#d9dcd6, #14191b);
+  --stone: light-dark(#e7e9e4, #1c2326);
+  --stone-sunk: light-dark(#cfd3cc, #101416);
+  --ink: light-dark(#1b2124, #e3e7e4);
+  --ink-soft: light-dark(#475155, #a7b0ae);
+  --ink-faint: light-dark(#6c7679, #78827f);
+  --incise: light-dark(rgb(20 28 30 / 0.22), rgb(0 0 0 / 0.55));
+  --incise-light: light-dark(rgb(255 255 255 / 0.7), rgb(255 255 255 / 0.06));
+  --focus: light-dark(#1f6f78, #6cc7cf);
+
+  --water: light-dark(#1f6f78, #4fb3bd);
+  --water-wash: light-dark(rgb(31 111 120 / 0.3), rgb(79 179 189 / 0.28));
+  --state-low: light-dark(#a4874f, #c9ad78);
+  --state-normal: light-dark(#2c7d84, #4aa8b0);
+  --state-high: light-dark(#283e94, #93a6ff);
+  --state-unknown: light-dark(#8c9390, #66706e);
+  --rain: light-dark(#2f63c4, #6d9cf2);
+
+  --severe: light-dark(#7d1022, #f0566d);
+  --warning: light-dark(#c62632, #ff7469);
+  --alert: light-dark(#c77700, #f2a630);
+  --on-plaque: #fff;
+
+  --map-land: light-dark(#dfe2dc, #171d1f);
+  --map-park: light-dark(#d3dbcf, #1a2321);
+  --map-water: light-dark(#b9cfd1, #10262a);
+  --map-river: light-dark(#4f97a0, #2f7d86);
+  --map-road: light-dark(#ffffff, #283134);
+  --map-border: light-dark(#a3aaa6, #3a4446);
+  --map-label: light-dark(#3d4649, #9aa4a2);
+  --map-halo: light-dark(#e7e9e4, #14191b);
+  --map-shade: light-dark(#5c6661, #000000);
+  --map-light: light-dark(#ffffff, #3b4648);
+
+  --font: 'Mona Sans Variable', system-ui, sans-serif;
+  --carved: 125%;
+  --tracking: 0.08em;
+
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 36px;
+  --radius: 3px;
+  --tap: 44px;
+  --slab: 400px;
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --quick: 180ms;
+  --slow: 900ms;
+}
+
+:root[data-theme='light'] {
+  color-scheme: light;
+}
+
+:root[data-theme='dark'] {
+  color-scheme: dark;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  font-family: var(--font);
+  font-size: 1rem;
+  line-height: 1.5;
+  color: var(--ink);
+  background: var(--ground);
+  font-variant-numeric: tabular-nums;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1,
+h2,
+h3 {
+  line-height: 1.15;
+  text-wrap: balance;
+}
+
+p {
+  text-wrap: pretty;
+}
+
+a {
+  color: inherit;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.2em;
+}
+
+button,
+input {
+  font: inherit;
+  color: inherit;
+}
+
+:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* incised caps, the lettering on every flood mark */
+.carved {
+  font-stretch: var(--carved);
+  font-weight: 700;
+  letter-spacing: var(--tracking);
+  text-transform: uppercase;
+  text-shadow: 0 1px 0 var(--incise-light);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

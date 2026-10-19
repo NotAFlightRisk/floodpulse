@@ -1,0 +1,13 @@
+{
+  "name": "floodpulse",
+  "short_name": "floodpulse",
+  "description": "Every river gauge in England on one live map",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#d9dcd6",
+  "theme_color": "#1b2124",
+  "icons": [
+    { "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml" },
+    { "src": "/apple-touch-icon.png", "sizes": "180x180", "type": "image/png" }
+  ]
+}

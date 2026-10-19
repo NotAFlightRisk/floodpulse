@@ -1,0 +1,13 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "floodpulse",
+  "main": ".svelte-kit/cloudflare/_worker.js",
+  "compatibility_date": "2026-10-01",
+  "compatibility_flags": ["nodejs_compat"],
+  "assets": { "directory": ".svelte-kit/cloudflare", "binding": "ASSETS" },
+  "observability": { "enabled": true },
+  "kv_namespaces": [{ "binding": "STORE", "id": "d58b30eebaba433ea24ecf12eeb08995" }],
+  "triggers": { "crons": ["4-59/15 * * * *"] },
+  "vars": { "ORIGIN": "https://floodpulse.peng.ly" },
+  "routes": [{ "pattern": "floodpulse.peng.ly", "custom_domain": true }]
+}
