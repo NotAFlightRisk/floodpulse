@@ -2,6 +2,7 @@
 // usage: npm run rivers -- path/to/oprvrs_gb.gpkg (GeoPackage from the OS Data Hub, OGL)
 import { createHash } from 'node:crypto';
 import { mkdirSync, rmSync, writeFileSync } from 'node:fs';
+import { dirname } from 'node:path';
 import { GeoJSONVT } from '@maplibre/geojson-vt';
 import { fromGeojsonVt } from '@maplibre/vt-pbf';
 import { items, toStation } from '../../src/lib/server/ea.ts';
@@ -167,17 +168,10 @@ async function main(path: string) {
     });
   };
 
-  const version = createHash('sha1')
-    .update(JSON.stringify(index))
-    .update(String(links.length))
-    .digest('hex')
-    .slice(0, 8);
-  rmSync(TILES, { recursive: true, force: true });
-  let written = 0;
-  let bytes = 0;
+  const tiles: { path: string; pbf: Uint8Array }[] = [];
   for (let z = MIN_ZOOM; z <= MAX_ZOOM; z++) {
     const lines = linesAt(z);
-    const tiles = new GeoJSONVT(
+    const cutter = new GeoJSONVT(
       { type: 'FeatureCollection', features: lines },
       // geojson-vt keeps every vertex at its max zoom, which only the last zoom wants
       { maxZoom: z === MAX_ZOOM ? z : z + 1, indexMaxZoom: 0, tolerance: 3, buffer: 16 }
@@ -186,19 +180,27 @@ async function main(path: string) {
     const [x1, y1] = tileOf(EAST, SOUTH, z);
     for (let x = x0; x <= x1; x++)
       for (let y = y0; y <= y1; y++) {
-        const tile = tiles.getTile(z, x, y);
+        const tile = cutter.getTile(z, x, y);
         // an empty file for open sea, so a missing tile never falls through to the app
         const pbf = tile?.features.length
           ? fromGeojsonVt({ rivers: tile }, { version: 2 })
           : new Uint8Array();
-        mkdirSync(`${TILES}/${version}/${z}/${x}`, { recursive: true });
-        writeFileSync(`${TILES}/${version}/${z}/${x}/${y}.pbf`, pbf);
-        written++;
-        bytes += pbf.length;
+        tiles.push({ path: `${z}/${x}/${y}.pbf`, pbf });
       }
     console.log(`z${z}: ${lines.length} lines`);
   }
-  console.log(`${written} tiles, ${round(bytes / 1e6)} MB`);
+
+  // named for what's in them, so a browser never holds on to tiles from another build
+  const hash = createHash('sha1');
+  for (const { path, pbf } of tiles) hash.update(path).update(pbf);
+  const version = hash.digest('hex').slice(0, 8);
+  rmSync(TILES, { recursive: true, force: true });
+  for (const { path, pbf } of tiles) {
+    mkdirSync(dirname(`${TILES}/${version}/${path}`), { recursive: true });
+    writeFileSync(`${TILES}/${version}/${path}`, pbf);
+  }
+  const bytes = tiles.reduce((sum, { pbf }) => sum + pbf.length, 0);
+  console.log(`${tiles.length} tiles, ${round(bytes / 1e6)} MB`);
 
   mkdirSync(INDEX, { recursive: true });
   writeFileSync(

@@ -47,6 +47,17 @@ describe('drainage', () => {
     // 1 km in, shared 90/10 down the two channels, then all of it back together
     expect(drainage(network)[3]).toBe(1000 + 1900 + 1100);
   });
+
+  it('counts a loop once, rather than going round it again', () => {
+    const network = new Network([
+      link('a1', 'a2'),
+      link('a2', 'a3'),
+      link('a3', 'a2'),
+      link('a3', 'a4')
+    ]);
+    // 2 km reaches a3, then half carries on and half goes back round, and stops there
+    expect(drainage(network)[3]).toBe(1000 + 1000);
+  });
 });
 
 describe('rivers', () => {

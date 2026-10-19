@@ -39,12 +39,12 @@ const p: ExpressionSpecification = ['feature-state', 'p'];
 
 const unread: ExpressionSpecification = ['==', p, null];
 
-/** Sand below normal, teal through it and lichen above, blending across each edge */
+/** Sand below normal, teal through it and lichen above, switching right at its edges */
 export const ramp = ([low, normal, high, faint]: string[]): ExpressionSpecification => [
   'case',
   unread,
   faint,
-  ['interpolate-lab', ['linear'], p, -0.2, low, 0.1, normal, 0.9, normal, 1.2, high]
+  ['step', p, low, 0, normal, 1, high]
 ];
 
 const lit: ExpressionSpecification = ['boolean', ['feature-state', 'lit'], false];

@@ -471,7 +471,7 @@
   $effect(() => {
     if (!map) return;
     map.setFilter(FLOW, ['in', ['get', 'g'], ['literal', rising]]);
-    if (calm.current || !rising.length) return;
+    if (calm.current || !rising.length || !shown.river) return;
     const target = map;
     let frame = 0;
     let last = 0;

@@ -6,7 +6,7 @@
 </p>
 
 <p align="center">
-<img src="screenshot.png" width="800" alt="A map of England covered in river gauges marked rising, falling or steady, next to a carved stone gauge scale for one of them" />
+<img src="screenshot.png" width="800" alt="A dark map of England's rivers, each stretch coloured by whether its gauge is running normal, below or above normal, beside the latest flood warnings and biggest rises" />
 </p>
 
 <details>

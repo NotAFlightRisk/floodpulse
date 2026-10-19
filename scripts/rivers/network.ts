@@ -73,6 +73,8 @@ export function drainage({ links, downstream, upstream }: Network) {
   const drain = (start: number) => {
     const queue = [start];
     for (let i = queue.pop(); i !== undefined; i = queue.pop()) {
+      // a loop can hand a link back round to itself
+      if (done[i]) continue;
       done[i] = 1;
       if (!flows(i)) continue;
       const branches = downstream(i).filter(flows);

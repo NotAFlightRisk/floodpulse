@@ -68,7 +68,7 @@
     <Masthead summary={data.summary} {feed} {theme} picked={Boolean(picked)} />
   </header>
 
-  <section class="map" aria-label="Map of river gauges in England">
+  <section class="map" aria-label="Map of England's rivers and their gauges">
     <Map
       live={feed.live}
       {picked}
