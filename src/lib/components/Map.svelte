@@ -296,7 +296,7 @@
           return;
         }
         target.addControl(new NavigationControl({ showCompass: false }), 'top-right');
-        target.addControl(new AttributionControl({ compact: true }), 'top-right');
+        target.addControl(new AttributionControl({ compact: !wide.current }), 'top-right');
         const popup = new Popup({
           closeButton: false,
           closeOnClick: false,

@@ -83,7 +83,8 @@
         >, under the
         <a href="https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/"
           >Open Government Licence</a
-        >. Not an official service, so for anything that matters check
+        >. Map data © <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>
+        contributors. Not an official service, so for anything that matters check
         <a href={official}>Check for flooding</a> or call Floodline on 0345 988 1188.
       </p>
       <p>

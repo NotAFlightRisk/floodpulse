@@ -14,6 +14,7 @@
     stateLabel,
     trendLabel
   } from '#lib/format.js';
+  import { fetchHistory } from '#lib/history.js';
   import { useFeed } from '#lib/live.svelte.js';
   import { name, official } from '#lib/meta.js';
   import type { Point } from '#lib/types.js';
@@ -43,9 +44,8 @@
     const quit = new AbortController();
     history = undefined;
     failed = false;
-    fetch(`/api/history/${measure}`, { signal: quit.signal })
-      .then((res) => (res.ok ? res.json() : Promise.reject(new Error(`history ${res.status}`))))
-      .then((points: Point[]) => (history = points))
+    fetchHistory(measure, quit.signal)
+      .then((points) => (history = points))
       .catch(() => !quit.signal.aborted && (failed = true));
     return () => quit.abort();
   });
