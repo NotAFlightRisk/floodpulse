@@ -134,7 +134,8 @@
 
     @media (width < 800px) {
       grid-template-columns: 1fr;
-      grid-template-rows: auto 58svh auto;
+      /* the map takes the rest of the first screen, with a peek of what's below */
+      grid-template-rows: auto max(50svh, 100svh - 15rem) auto;
       grid-template-areas: 'head' 'map' 'rail';
       height: auto;
 
