@@ -145,12 +145,3 @@ input {
     box-shadow: 0 1px 0 var(--incise-light);
   }
 }
-
-@media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    animation-duration: 0.01ms !important;
-    transition-duration: 0.01ms !important;
-  }
-}

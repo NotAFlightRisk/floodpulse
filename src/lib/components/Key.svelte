@@ -52,7 +52,7 @@
   .key {
     position: absolute;
     left: var(--space-3);
-    bottom: var(--space-3);
+    top: var(--space-3);
     z-index: 1;
     display: grid;
     gap: var(--space-2);

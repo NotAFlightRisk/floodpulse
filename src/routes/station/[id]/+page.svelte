@@ -176,8 +176,10 @@
   }
 
   .quiet {
-    padding-left: var(--space-3);
-    border-left: 3px solid var(--ink-faint);
+    padding: var(--space-2) var(--space-3);
+    background: var(--stone-sunk);
+    border-radius: var(--radius);
+    box-shadow: inset 0 1px 2px var(--incise);
   }
 
   .chips {

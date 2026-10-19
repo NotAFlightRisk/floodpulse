@@ -29,6 +29,7 @@
 
   let container: HTMLDivElement;
   let map = $state.raw<Map>();
+  let unsupported = $state(false);
   // the built-in Map, since maplibre's has the name in here
   const outlines = new globalThis.Map<string, Promise<Feature[]>>();
 
@@ -255,15 +256,21 @@
       ({ Map, Popup, NavigationControl, AttributionControl, setWorkerUrl }) => {
         if (gone) return;
         setWorkerUrl(worker);
-        target = new Map({
-          container,
-          style: basemap(palette()),
-          bounds: ENGLAND,
-          maxBounds: [-12, 48, 6, 60],
-          attributionControl: false,
-          dragRotate: false,
-          fadeDuration: calm.current ? 0 : 300
-        });
+        try {
+          target = new Map({
+            container,
+            style: basemap(palette()),
+            bounds: ENGLAND,
+            maxBounds: [-12, 48, 6, 60],
+            attributionControl: false,
+            dragRotate: false,
+            fadeDuration: calm.current ? 0 : 300
+          });
+        } catch {
+          // no WebGL2, which is the browser's call rather than a bug of ours
+          unsupported = true;
+          return;
+        }
         target.addControl(new NavigationControl({ showCompass: false }), 'top-right');
         target.addControl(new AttributionControl({ compact: true }), 'bottom-right');
         const popup = new Popup({
@@ -310,9 +317,10 @@
   });
 
   $effect(() => {
-    if (!map) return;
+    const pitch = shown.relief ? 55 : 0;
+    if (!map || map.getPitch() === pitch) return;
     map.setTerrain(shown.relief ? { source: 'dem', exaggeration: 1.6 } : null);
-    map.easeTo({ pitch: shown.relief ? 55 : 0, duration: calm.current ? 0 : 1400 });
+    map.easeTo({ pitch, duration: calm.current ? 0 : 1400 });
   });
 
   $effect(() => {
@@ -358,13 +366,28 @@
   bind:this={container}
   role="region"
   aria-label="Map of river gauges in England"
-></div>
+>
+  {#if unsupported}
+    <p class="unsupported">
+      This browser can't draw the map, as it needs WebGL2. Search and the gauge pages still work.
+    </p>
+  {/if}
+</div>
 
 <style>
   .map {
     position: absolute;
     inset: 0;
     background: var(--map-land);
+
+    .unsupported {
+      display: grid;
+      place-content: center;
+      height: 100%;
+      padding: var(--space-6);
+      text-align: center;
+      color: var(--ink-soft);
+    }
 
     :global(.tip .maplibregl-popup-content) {
       padding: var(--space-1) var(--space-2);

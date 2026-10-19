@@ -130,6 +130,10 @@
   .water {
     animation: rise var(--slow) var(--ease-out) both;
 
+    @media (prefers-reduced-motion: reduce) {
+      animation: none;
+    }
+
     rect {
       fill: var(--water-wash);
     }
