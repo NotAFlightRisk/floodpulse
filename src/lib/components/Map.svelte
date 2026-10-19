@@ -25,6 +25,7 @@
   const ENGLAND: [number, number, number, number] = [-6.4, 49.9, 2.1, 55.85];
   const OUTLINES_FROM = 8;
   const calm = new MediaQuery('prefers-reduced-motion: reduce');
+  const wide = new MediaQuery('width >= 800px');
   const RANK = { high: 0, low: 1, normal: 2, unknown: 3 };
 
   let container: HTMLDivElement;
@@ -83,8 +84,9 @@
     );
 
   function paintIcons(target: Map) {
-    const [halo, ink, ...fills] = resolve([
+    const [halo, outline, ink, ...fills] = resolve([
       'map-halo',
+      'ink',
       'on-plaque',
       ...STATES.map((state) => `state-${state}`),
       'severe',
@@ -95,8 +97,11 @@
       target.hasImage(id)
         ? target.updateImage(id, image)
         : target.addImage(id, image, { pixelRatio: RATIO });
+    // above normal gets an ink edge, so it stands out from the stone in either theme
     STATES.forEach((state, i) =>
-      TRENDS.forEach((trend) => add(`g-${state}-${trend}`, gauge(trend, fills[i], halo)))
+      TRENDS.forEach((trend) =>
+        add(`g-${state}-${trend}`, gauge(trend, fills[i], state === 'high' ? outline : halo))
+      )
     );
     SEVERITIES.forEach((severity) =>
       add(`w-${severity}`, plaque(severity, fills[STATES.length + severity - 1], ink))
@@ -276,6 +281,10 @@
             container,
             style: basemap(palette()),
             bounds: ENGLAND,
+            // room for the key strip along the bottom on a desktop
+            fitBoundsOptions: {
+              padding: { top: 16, right: 16, left: 16, bottom: wide.current ? 110 : 16 }
+            },
             maxBounds: [-12, 48, 6, 60],
             attributionControl: false,
             dragRotate: false,
@@ -294,11 +303,13 @@
           offset: 12,
           className: 'tip'
         });
-        target.on('load', () => {
-          // compact attribution starts open over the map, which helps nobody
+        // compact attribution opens itself once the sources say who they are, so shut it after
+        target.once('idle', () =>
           container
             .querySelector('.maplibregl-compact-show')
-            ?.classList.remove('maplibregl-compact-show');
+            ?.classList.remove('maplibregl-compact-show')
+        );
+        target.on('load', () => {
           addLayers(target!);
           repaint(target!);
           hover(target!, popup, 'gauges', (p) => `${p.name}${p.level ? ` · ${p.level}` : ''}`);

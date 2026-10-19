@@ -88,7 +88,6 @@
     background: var(--stone-sunk);
     border: 1px solid var(--incise);
     border-radius: var(--radius);
-    box-shadow: inset 0 1px 2px var(--incise);
 
     &::placeholder {
       color: var(--ink-faint);
