@@ -37,6 +37,9 @@ export function fromGrid(reference: string): [number, number] | undefined {
     (19 - Math.floor(first / 5) * 5 - Math.floor(second / 5)) * 100_000 +
     (+match[2].slice(digits) + 0.5) * unit;
 
+  // two letters can name squares the National Grid doesn't have
+  if (east < 0 || east >= 700_000 || north < 0 || north >= 1_300_000) return;
+
   let lat = LAT0;
   do lat += (north - N0 - meridian(lat)) / (A * F0);
   while (Math.abs(north - N0 - meridian(lat)) >= 0.01);

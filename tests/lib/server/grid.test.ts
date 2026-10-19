@@ -20,5 +20,6 @@ describe('fromGrid', () => {
     expect(fromGrid('TQ391')).toBeUndefined();
     expect(fromGrid('IQ3910')).toBeUndefined();
     expect(fromGrid('nope')).toBeUndefined();
+    expect(fromGrid('ZZ0000')).toBeUndefined();
   });
 });

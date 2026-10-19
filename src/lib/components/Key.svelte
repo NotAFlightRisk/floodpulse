@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { onMount } from 'svelte';
+  import { MediaQuery } from 'svelte/reactivity';
   import { stateLabel, trendLabel } from '#lib/format.js';
   import type { Shown, State, Trend } from '#lib/types.js';
   import Glyph from './Glyph.svelte';
@@ -17,11 +17,11 @@
   const STATES: State[] = ['high', 'normal', 'low', 'unknown'];
   const TRENDS: Trend[] = ['rising', 'steady', 'falling', 'unknown'];
 
-  let open = $state(false);
-
   // open on a desktop, where there's room for it beside the map
-  onMount(() => {
-    open = matchMedia('(width >= 800px)').matches;
+  const wide = new MediaQuery('width >= 800px');
+  let open = $state(false);
+  $effect(() => {
+    open = wide.current;
   });
 </script>
 
