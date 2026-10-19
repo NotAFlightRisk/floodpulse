@@ -468,13 +468,6 @@
   });
 
   $effect(() => {
-    const pitch = shown.relief ? 55 : 0;
-    if (!map || map.getPitch() === pitch) return;
-    map.setTerrain(shown.relief ? { source: 'dem', exaggeration: 1.6 } : null);
-    map.easeTo({ pitch, duration: calm.current ? 0 : 1400 });
-  });
-
-  $effect(() => {
     theme.dark;
     if (map) repaint(map);
   });

@@ -33,8 +33,7 @@
     tidal: true,
     ground: false,
     rain: false,
-    warnings: true,
-    relief: false
+    warnings: true
   });
 
   const KINDS = ['station', 'warning', 'rain', 'river'];

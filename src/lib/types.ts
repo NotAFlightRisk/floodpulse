@@ -115,7 +115,6 @@ export interface Shown {
   ground: boolean;
   rain: boolean;
   warnings: boolean;
-  relief: boolean;
 }
 
 export interface Picked {

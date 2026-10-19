@@ -11,8 +11,7 @@
     ['tidal', 'Tidal'],
     ['ground', 'Groundwater'],
     ['rain', 'Rain now'],
-    ['warnings', 'Warnings'],
-    ['relief', '3D relief']
+    ['warnings', 'Warnings']
   ];
   const LINES = [
     ['high', 'Above normal'],
