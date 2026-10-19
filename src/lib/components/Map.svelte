@@ -146,10 +146,11 @@
     const paint = (layer: string, property: string, value: unknown) =>
       target.setPaintProperty(layer, property as never, value as never);
     for (const [layer, property, token] of PAINT) paint(layer, property, colours[token]);
-    const [ink, water, rainColour, label, halo, ...rest] = resolve([
+    const [ink, water, rainColour, rainFade, label, halo, ...rest] = resolve([
       'ink',
       'water',
       'rain',
+      'rain-fade',
       'map-label',
       'map-halo',
       'state-low',
@@ -164,6 +165,15 @@
     paint('ring', 'circle-stroke-color', ink);
     paint('rain', 'circle-color', rainColour);
     paint('rain', 'circle-stroke-color', water);
+    paint('rain-cloud', 'heatmap-color', [
+      'interpolate',
+      ['linear'],
+      ['heatmap-density'],
+      0,
+      rainFade,
+      1,
+      rainColour
+    ]);
     paint('streams', 'line-color', colours.river);
     paint('reaches', 'line-color', ramp(states));
     paint('reach-lit', 'line-color', ink);
@@ -210,6 +220,23 @@
     target.addSource('outlines', { type: 'geojson', data: collection([]) });
 
     for (const layer of LAYERS) target.addLayer(layer, 'places');
+    // under the rivers, so the rain doesn't muddy their colours
+    target.addLayer(
+      {
+        id: 'rain-cloud',
+        type: 'heatmap',
+        source: 'rain',
+        paint: {
+          'heatmap-weight': ['interpolate', ['linear'], ['get', 'mm'], 0, 0, 0.1, 0.4, 1, 1],
+          'heatmap-intensity': 2,
+          // about 30km at any zoom, so neighbouring gauges run together
+          'heatmap-radius': ['interpolate', ['exponential', 2], ['zoom'], 5, 10, 12, 1280],
+          // thins out close up, where the gauges themselves say how much fell
+          'heatmap-opacity': ['interpolate', ['linear'], ['zoom'], GAUGES_FROM, 0.7, 12, 0.3]
+        }
+      },
+      'streams'
+    );
     target.addLayer({
       id: 'outlines-fill',
       type: 'fill',
@@ -226,6 +253,7 @@
       id: 'rain',
       type: 'circle',
       source: 'rain',
+      minzoom: GAUGES_FROM,
       paint: {
         'circle-radius': ['interpolate', ['linear'], ['get', 'mm'], 0, 1.5, 0.2, 4, 1, 8, 4, 14],
         'circle-opacity': ['case', ['>', ['get', 'mm'], 0], 0.55, 0.25],
@@ -451,7 +479,8 @@
         ['in', ['get', 'id'], ['literal', focus]]
       ]
     ]);
-    map.setLayoutProperty('rain', 'visibility', shown.rain ? 'visible' : 'none');
+    for (const layer of ['rain', 'rain-cloud'])
+      map.setLayoutProperty(layer, 'visibility', shown.rain ? 'visible' : 'none');
     for (const layer of ['warnings', 'outlines-fill', 'outlines-line'])
       map.setLayoutProperty(layer, 'visibility', shown.warnings ? 'visible' : 'none');
     const network = [
