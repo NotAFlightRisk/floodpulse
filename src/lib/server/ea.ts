@@ -1,4 +1,5 @@
 import type { Kind, Mark, RainStation, Severity, Station, Warning } from '#lib/types.js';
+import { fromGrid } from './grid.ts';
 
 export const EA = 'https://environment.data.gov.uk/flood-monitoring';
 
@@ -40,14 +41,20 @@ const mark = (raw: unknown): Mark | undefined => {
   return value === undefined || !date ? undefined : { value, date };
 };
 
+// most boreholes only come with a 1 km grid square, so that'll have to do
+const place = (raw: Raw) => {
+  const [lat, lon] = [num(raw.lat), num(raw.long)];
+  const grid = text(raw.gridReference);
+  return lat !== undefined && lon !== undefined ? [lat, lon] : grid ? fromGrid(grid) : undefined;
+};
+
 export function toStation(raw: Raw): Station | undefined {
   const id = text(raw.notation);
-  const lat = num(raw.lat);
-  const lon = num(raw.long);
+  const [lat, lon] = place(raw) ?? [];
   if (!id || lat === undefined || lon === undefined || tail(raw.status) === 'statusClosed') return;
   const measures = list(raw.measures).filter((m) => text(m.unitName)?.startsWith('m'));
   for (const [qualifier, kind, scaleKey] of QUALIFIERS) {
-    const measure = measures.find((m) => m.qualifier === qualifier);
+    const measure = measures.find((m) => text(m.qualifier) === qualifier);
     if (!measure) continue;
     const scale = (typeof raw[scaleKey] === 'object' ? raw[scaleKey] : {}) as Raw;
     const low = num(scale.typicalRangeLow);
@@ -76,26 +83,30 @@ export function toRainStation(raw: Raw): RainStation | undefined {
   const id = text(raw.notation);
   const lat = num(raw.lat);
   const lon = num(raw.long);
-  const measure = list(raw.measures).find((m) => m.parameter === 'rainfall');
+  const measure = list(raw.measures).find((m) => text(m.parameter) === 'rainfall');
   if (!id || lat === undefined || lon === undefined || !measure) return;
   return { id, lat, lon, measure: tail(measure['@id']) };
 }
 
-/** Latest reading per measure, keyed by the measure's own id */
+/** Newest reading per measure, keyed by the measure's own id */
 export function toReadings(raw: Raw[]) {
   const readings = new Map<string, { value: number; at: string }>();
   for (const reading of raw) {
     const value = num(reading.value);
     const at = text(reading.dateTime);
-    if (value !== undefined && at) readings.set(tail(reading.measure), { value, at });
+    const measure = tail(reading.measure);
+    const known = readings.get(measure);
+    if (value === undefined || !at || !measure) continue;
+    if (!known || Date.parse(at) > Date.parse(known.at)) readings.set(measure, { value, at });
   }
   return readings;
 }
 
 export function toWarning(raw: Raw, areas: Record<string, [number, number]>): Warning | undefined {
   const severity = num(raw.severityLevel);
-  if (severity !== 1 && severity !== 2 && severity !== 3) return;
-  const id = text(raw.floodAreaID)!;
+  const id = text(raw.floodAreaID);
+  const raised = text(raw.timeRaised);
+  if ((severity !== 1 && severity !== 2 && severity !== 3) || !id || !raised) return;
   const area = (raw.floodArea ?? {}) as Raw;
   const [lat, lon] = areas[id] ?? [];
   return {
@@ -106,7 +117,7 @@ export function toWarning(raw: Raw, areas: Record<string, [number, number]>): Wa
     county: text(area.county),
     water: text(area.riverOrSea),
     message: text(raw.message)?.trim() || undefined,
-    raised: text(raw.timeRaised)!,
+    raised,
     changed: text(raw.timeSeverityChanged),
     lat,
     lon
@@ -116,9 +127,10 @@ export function toWarning(raw: Raw, areas: Record<string, [number, number]>): Wa
 export function toAreas(raw: Raw[]) {
   const areas: Record<string, [number, number]> = {};
   for (const area of raw) {
+    const code = text(area.notation);
     const lat = num(area.lat);
     const lon = num(area.long);
-    if (lat !== undefined && lon !== undefined) areas[text(area.notation)!] = [lat, lon];
+    if (code && lat !== undefined && lon !== undefined) areas[code] = [lat, lon];
   }
   return areas;
 }

@@ -63,13 +63,17 @@ describe('stateOf', () => {
 });
 
 describe('readGauges', () => {
+  const at = '2026-10-19T15:00:00Z';
+  const now = Date.parse(at) / 60_000;
+
   it('works out a trend from the trail and moves the trail along', () => {
-    const at = '2026-10-19T15:00:00Z';
-    const now = Date.parse(at) / 60_000;
     const readings = new Map([[station.measure, { value: 1.6, at }]]);
-    const { gauges, trail } = readGauges([station], readings, {
-      [station.measure]: [[now - 180, 1.2]]
-    });
+    const { gauges, trail } = readGauges(
+      [station],
+      readings,
+      { [station.measure]: [[now - 180, 1.2]] },
+      Date.parse(at)
+    );
     expect(gauges[0]).toMatchObject({ value: 1.6, change: 0.4, trend: 'rising', state: 'high' });
     expect(trail[station.measure]).toEqual([
       [now - 180, 1.2],
@@ -77,11 +81,49 @@ describe('readGauges', () => {
     ]);
   });
 
-  it('leaves a gauge that missed a reading as unknown, but keeps its trail', () => {
-    const kept = { [station.measure]: [[1000, 1] as Point] };
-    const { gauges, trail } = readGauges([station], new Map(), kept);
-    expect(gauges[0]).toMatchObject({ trend: 'unknown', state: 'unknown' });
-    expect(gauges[0].value).toBeUndefined();
+  it('keeps the newest reading when the EA hands back an older one', () => {
+    const readings = new Map([[station.measure, { value: 1.0, at: '2026-10-19T14:45:00Z' }]]);
+    const { gauges } = readGauges(
+      [station],
+      readings,
+      {
+        [station.measure]: [
+          [now - 180, 1.2],
+          [now, 1.6]
+        ]
+      },
+      Date.parse(at)
+    );
+    expect(gauges[0]).toMatchObject({
+      value: 1.6,
+      at: '2026-10-19T15:00:00.000Z',
+      trend: 'rising'
+    });
+  });
+
+  it('stops calling a trend once the gauge has gone quiet', () => {
+    const readings = new Map([[station.measure, { value: 1.6, at }]]);
+    const later = Date.parse(at) + 3 * 3_600_000;
+    const { gauges } = readGauges(
+      [station],
+      readings,
+      { [station.measure]: [[now - 180, 1.2]] },
+      later
+    );
+    expect(gauges[0]).toMatchObject({ value: 1.6, trend: 'unknown', state: 'high' });
+  });
+
+  it('falls back on the trail when a gauge misses a reading, and knows nothing without one', () => {
+    const kept = { [station.measure]: [[now, 1] as Point] };
+    const { gauges, trail } = readGauges(
+      [station, { ...station, id: 'X2', measure: 'none' }],
+      new Map(),
+      kept,
+      Date.parse(at)
+    );
+    expect(gauges[0]).toMatchObject({ value: 1, state: 'normal' });
+    expect(gauges[1]).toMatchObject({ trend: 'unknown', state: 'unknown' });
+    expect(gauges[1].value).toBeUndefined();
     expect(trail).toEqual(kept);
   });
 });

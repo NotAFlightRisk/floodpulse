@@ -6,14 +6,26 @@
   import type { Summary } from '#lib/types.js';
   import Search from './Search.svelte';
 
-  let { summary, feed, theme }: { summary: Summary; feed: Feed; theme: Theme } = $props();
+  interface Props {
+    summary: Summary;
+    feed: Feed;
+    theme: Theme;
+    picked: boolean;
+  }
+
+  let { summary, feed, theme, picked }: Props = $props();
 
   const latest = $derived(feed.live ? summarise(feed.live) : summary);
   const warned = $derived(latest.warnings.length);
 </script>
 
 <div class="masthead">
-  <a class="name carved" href="/" aria-label="floodpulse, back to all rivers">floodpulse</a>
+  <a class="name carved" href="/" aria-label="floodpulse, back to all rivers">
+    <svg viewBox="0 0 32 32" aria-hidden="true">
+      <path d="M7 10.5h18M16 13v12M16 13 9.5 25M16 13l6.5 12" />
+    </svg>
+    floodpulse
+  </a>
   <button
     class="theme"
     onclick={() => theme.flip()}
@@ -30,7 +42,7 @@
       {/if}
     </svg>
   </button>
-  <p class="line">
+  <p class="line" class:picked>
     Every river gauge in England, read against its own normal.
     <span class="status" class:late={feed.failed}>
       {latest.rivers.toLocaleString('en-GB')} on rivers, {latest.high} above normal, {latest.rising} rising,
@@ -61,9 +73,27 @@
 
   .name {
     justify-self: start;
-    font-size: 1.375rem;
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    padding: var(--space-1) var(--space-3) var(--space-1) var(--space-2);
+    font-size: 1.25rem;
     text-decoration: none;
     color: var(--ink);
+    border: 1px solid var(--incise);
+    border-radius: var(--radius);
+    box-shadow:
+      inset 0 0 0 3px var(--stone),
+      inset 0 0 0 4px var(--incise);
+
+    svg {
+      width: 1.4em;
+      fill: none;
+      stroke: var(--water);
+      stroke-width: 2.6;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
   }
 
   .theme {
@@ -93,6 +123,14 @@
 
   .line {
     grid-column: 1 / -1;
+
+    /* on a phone the gauge's own reading wants the room */
+    &.picked {
+      @media (width < 800px) {
+        display: none;
+      }
+    }
+
     display: grid;
     gap: var(--space-1);
     font-size: 0.9375rem;

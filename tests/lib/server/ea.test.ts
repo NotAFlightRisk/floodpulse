@@ -46,9 +46,17 @@ describe('toStation', () => {
     expect(station).toMatchObject({ low: -0.5, high: 0.1, kind: 'river' });
   });
 
+  it('places a borehole that only has a grid square', () => {
+    const borehole = { ...raw, lat: undefined, long: undefined, gridReference: 'TQ3910' };
+    expect(toStation(borehole)).toMatchObject({
+      lat: expect.closeTo(50.877, 2),
+      lon: expect.closeTo(-0.017, 2)
+    });
+  });
+
   it("skips closed stations, missing ids or coordinates, and measures that aren't in metres", () => {
     expect(toStation({ ...raw, status: `${base}/def/core/statusClosed` })).toBeUndefined();
-    expect(toStation({ ...raw, lat: undefined })).toBeUndefined();
+    expect(toStation({ ...raw, lat: undefined, long: undefined })).toBeUndefined();
     expect(toStation({ ...raw, notation: '' })).toBeUndefined();
     expect(toStation({ ...raw, measures: measure('Stage', 'V') })).toBeUndefined();
   });
@@ -63,6 +71,14 @@ describe('toStation', () => {
 });
 
 describe('toReadings', () => {
+  it('keeps the newest of two readings for one measure', () => {
+    const readings = toReadings([
+      { measure: `${base}/measures/A-level`, dateTime: '2026-10-19T14:15:00Z', value: 1.3 },
+      { measure: `${base}/measures/A-level`, dateTime: '2026-10-19T14:00:00Z', value: 1.2 }
+    ]);
+    expect(readings.get('A-level')).toEqual({ value: 1.3, at: '2026-10-19T14:15:00Z' });
+  });
+
   it('keys by measure id and skips readings with no number', () => {
     const readings = toReadings([
       { measure: `${base}/measures/A-level`, dateTime: '2026-10-19T14:00:00Z', value: 1.2 },
@@ -90,7 +106,9 @@ describe('toWarning', () => {
     expect(warning?.message).toBe('River levels are rising.');
   });
 
-  it('drops warnings that are no longer in force', () => {
+  it("drops warnings that are no longer in force, or that don't say where or when", () => {
     expect(toWarning({ ...flood, severityLevel: 4 }, {})).toBeUndefined();
+    expect(toWarning({ ...flood, floodAreaID: undefined }, {})).toBeUndefined();
+    expect(toWarning({ ...flood, timeRaised: undefined }, {})).toBeUndefined();
   });
 });

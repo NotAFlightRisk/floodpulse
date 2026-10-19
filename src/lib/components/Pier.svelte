@@ -105,14 +105,14 @@
   }
 
   .band {
-    fill: var(--ground);
-    stroke: var(--incise);
+    fill: var(--band);
+    stroke: var(--ink-faint);
     stroke-dasharray: 2 3;
   }
 
   .note {
     text-anchor: middle;
-    font-size: 9px;
+    font-size: 10px;
     font-weight: 700;
     fill: var(--ink-faint);
   }
@@ -130,6 +130,10 @@
   .water {
     animation: rise var(--slow) var(--ease-out) both;
 
+    @media (prefers-reduced-motion: reduce) {
+      animation: none;
+    }
+
     rect {
       fill: var(--water-wash);
     }
@@ -141,7 +145,7 @@
   }
 
   .now {
-    font-size: 13px;
+    font-size: 10px;
     font-weight: 800;
     fill: var(--water);
   }

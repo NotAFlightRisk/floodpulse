@@ -34,7 +34,7 @@
       active = (active + (event.key === 'ArrowDown' ? 1 : matches.length - 1)) % matches.length;
     } else if (event.key === 'Enter') {
       event.preventDefault();
-      pick(matches[active].id);
+      pick(matches[Math.min(active, matches.length - 1)].id);
     } else if (event.key === 'Escape') {
       open = false;
     }
@@ -88,7 +88,6 @@
     background: var(--stone-sunk);
     border: 1px solid var(--incise);
     border-radius: var(--radius);
-    box-shadow: inset 0 1px 2px var(--incise);
 
     &::placeholder {
       color: var(--ink-faint);

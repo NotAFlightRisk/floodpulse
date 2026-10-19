@@ -8,7 +8,9 @@ export async function cachedFetch(
   seconds: number,
   load: () => Promise<Response>
 ) {
-  const key = new Request(request.url);
+  // keyed on the path alone, so a made-up query string can't skip the cache
+  const { origin, pathname } = new URL(request.url);
+  const key = new Request(origin + pathname);
   const hit = await edge()?.match(key);
   if (hit) return hit;
   const fresh = await load();
