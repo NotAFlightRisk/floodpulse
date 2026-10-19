@@ -122,7 +122,6 @@
 
     li {
       border-bottom: 1px solid var(--incise);
-      box-shadow: 0 1px 0 var(--incise-light);
     }
 
     a {

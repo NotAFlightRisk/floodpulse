@@ -8,16 +8,16 @@
   --stone-sunk: light-dark(#cfd3cc, #101416);
   --ink: light-dark(#1b2124, #e3e7e4);
   --ink-soft: light-dark(#475155, #a7b0ae);
-  --ink-faint: light-dark(#6c7679, #78827f);
+  --ink-faint: light-dark(#596366, #8a9491);
   --incise: light-dark(rgb(20 28 30 / 0.22), rgb(0 0 0 / 0.55));
-  --incise-light: light-dark(rgb(255 255 255 / 0.7), rgb(255 255 255 / 0.06));
   --focus: light-dark(#1f6f78, #6cc7cf);
 
   --water: light-dark(#1f6f78, #4fb3bd);
   --water-wash: light-dark(rgb(31 111 120 / 0.3), rgb(79 179 189 / 0.28));
-  --state-low: light-dark(#a4874f, #c9ad78);
+  --band: light-dark(#c3c9c0, #2c3639);
+  --state-low: light-dark(#927d50, #a8946c);
   --state-normal: light-dark(#2c7d84, #4aa8b0);
-  --state-high: light-dark(#283e94, #93a6ff);
+  --state-high: light-dark(#6f6c00, #d8d24a);
   --state-unknown: light-dark(#8c9390, #66706e);
   --rain: light-dark(#2f63c4, #6d9cf2);
 
@@ -36,8 +36,6 @@
   --map-halo: light-dark(#e7e9e4, #14191b);
   --map-shade: light-dark(#5c6661, #000000);
   --map-light: light-dark(#ffffff, #3b4648);
-
-  --grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .09 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 
   --font: 'Mona Sans Variable', system-ui, sans-serif;
   --carved: 125%;
@@ -76,7 +74,14 @@ html {
   -webkit-text-size-adjust: 100%;
 }
 
+::selection {
+  color: var(--stone);
+  background: var(--water);
+}
+
 body {
+  caret-color: var(--water);
+  scrollbar-color: var(--ink-faint) var(--stone);
   font-family: var(--font);
   font-size: 1rem;
   line-height: 1.5;
@@ -129,7 +134,6 @@ input {
   font-weight: 700;
   letter-spacing: var(--tracking);
   text-transform: uppercase;
-  text-shadow: 0 1px 0 var(--incise-light);
 }
 
 /* a heading with a line cut into the stone after it */
@@ -142,6 +146,5 @@ input {
     content: '';
     flex: 1;
     border-top: 1px solid var(--incise);
-    box-shadow: 0 1px 0 var(--incise-light);
   }
 }

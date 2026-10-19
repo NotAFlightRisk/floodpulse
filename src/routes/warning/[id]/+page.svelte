@@ -25,12 +25,12 @@
 
 <article class="warning">
   <a class="back" href="/">All rivers</a>
-  <p class="kicker">
+  <h1>{warning.label}</h1>
+  <p class="severity">
     <Plaque severity={warning.severity} /><span class="carved"
       >{severityLabel[warning.severity]}</span
     >
   </p>
-  <h1>{warning.label}</h1>
   <p class="where">{[warning.water, warning.county, warning.area].filter(Boolean).join(' · ')}</p>
   <p class="when">In force since {clock(since)} on {date(since)} ({ago(since, feed.now)})</p>
   {#if warning.message}<p class="message">{warning.message}</p>{/if}
@@ -54,7 +54,7 @@
     color: var(--ink-soft);
   }
 
-  .kicker {
+  .severity {
     display: flex;
     align-items: center;
     gap: var(--space-2);
@@ -78,7 +78,6 @@
     padding: var(--space-4);
     background: var(--stone-sunk);
     border-radius: var(--radius);
-    box-shadow: inset 0 1px 2px var(--incise);
   }
 
   .links {

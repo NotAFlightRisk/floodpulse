@@ -88,7 +88,7 @@ const LAYERS = [
     'source-layer': 'waterway',
     filter: ['in', ['get', 'class'], ['literal', ['river', 'canal']]],
     layout: { 'line-cap': 'round', 'line-join': 'round' },
-    paint: { 'line-width': width([5, 0.5, 9, 1.2, 13, 3, 16, 6]) }
+    paint: { 'line-width': width([5, 1.2, 8, 1.6, 13, 3, 16, 6]) }
   },
   {
     id: 'roads',

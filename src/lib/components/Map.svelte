@@ -11,7 +11,7 @@
   import { gauge, plaque, RATIO, SEVERITIES, STATES, TRENDS } from '#lib/map/icons.js';
   import { basemap, PAINT, palette, resolve } from '#lib/map/style.js';
   import type { Theme } from '#lib/theme.svelte.js';
-  import type { Live, Picked, Shown } from '#lib/types.js';
+  import type { Live, Picked, Shown, State } from '#lib/types.js';
 
   interface Props {
     live?: Live;
@@ -38,18 +38,22 @@
 
   const gauges = (data: Live) =>
     collection(
-      data.gauges.map((g) => ({
-        type: 'Feature' as const,
-        geometry: point(g.lon, g.lat),
-        properties: {
-          id: g.id,
-          name: g.name,
-          kind: g.kind,
-          icon: `g-${stale(g.at) ? 'unknown' : g.state}-${stale(g.at) ? 'unknown' : g.trend}`,
-          rank: RANK[g.state],
-          level: g.value === undefined ? '' : metres(g.value)
-        }
-      }))
+      data.gauges.map((g) => {
+        // a gauge that's gone quiet gets drawn as one, whatever it said last
+        const [state, trend] = stale(g.at) ? ['unknown', 'unknown'] : [g.state, g.trend];
+        return {
+          type: 'Feature' as const,
+          geometry: point(g.lon, g.lat),
+          properties: {
+            id: g.id,
+            name: g.name,
+            kind: g.kind,
+            icon: `g-${state}-${trend}`,
+            rank: RANK[state as State],
+            level: g.value === undefined ? '' : metres(g.value)
+          }
+        };
+      })
     );
 
   const rain = (data: Live) =>
@@ -167,7 +171,18 @@
       source: 'gauges',
       layout: {
         'icon-image': ['get', 'icon'],
-        'icon-size': ['interpolate', ['linear'], ['zoom'], 5, 0.55, 9, 0.85, 13, 1.1],
+        // above normal is the one worth seeing from across the room
+        'icon-size': [
+          'interpolate',
+          ['linear'],
+          ['zoom'],
+          5,
+          ['case', ['==', ['get', 'rank'], 0], 0.8, 0.55],
+          9,
+          ['case', ['==', ['get', 'rank'], 0], 1.2, 0.85],
+          13,
+          ['case', ['==', ['get', 'rank'], 0], 1.5, 1.1]
+        ],
         'icon-allow-overlap': true,
         'symbol-sort-key': ['-', 3, ['get', 'rank']]
       }
@@ -272,7 +287,7 @@
           return;
         }
         target.addControl(new NavigationControl({ showCompass: false }), 'top-right');
-        target.addControl(new AttributionControl({ compact: true }), 'bottom-right');
+        target.addControl(new AttributionControl({ compact: true }), 'top-right');
         const popup = new Popup({
           closeButton: false,
           closeOnClick: false,
@@ -280,6 +295,10 @@
           className: 'tip'
         });
         target.on('load', () => {
+          // compact attribution starts open over the map, which helps nobody
+          container
+            .querySelector('.maplibregl-compact-show')
+            ?.classList.remove('maplibregl-compact-show');
           addLayers(target!);
           repaint(target!);
           hover(target!, popup, 'gauges', (p) => `${p.name}${p.level ? ` · ${p.level}` : ''}`);

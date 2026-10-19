@@ -39,8 +39,7 @@
 
 <article class="rain">
   <a class="back" href="/">All rivers</a>
-  <p class="kicker carved">Rain gauge</p>
-  <h1>{gauge.id}</h1>
+  <h1>Rain gauge {gauge.id}</h1>
   {#if gauge.mm !== undefined && gauge.at}
     <p class="reading">
       <strong>{millimetres(gauge.mm)}</strong>
@@ -93,13 +92,7 @@
     color: var(--ink-soft);
   }
 
-  .kicker {
-    font-size: 0.75rem;
-    color: var(--rain);
-  }
-
   h1 {
-    margin-top: calc(var(--space-3) * -1);
     font-size: 1.75rem;
     font-weight: 750;
   }

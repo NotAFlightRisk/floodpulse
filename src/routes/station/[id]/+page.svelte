@@ -24,6 +24,11 @@
   const gauge = $derived(feed.live?.gauges.find((g) => g.id === data.gauge.id) ?? data.gauge);
   const quiet = $derived(stale(gauge.at, feed.now));
   const place = $derived([gauge.river, gauge.town].filter(Boolean).join(', '));
+  const where = $derived(
+    gauge.kind === 'river'
+      ? place || 'River gauge'
+      : [`${kindLabel[gauge.kind]} gauge`, place].filter(Boolean).join(', ')
+  );
   const reading = $derived(
     gauge.value === undefined
       ? 'no reading'
@@ -58,11 +63,8 @@
 
 <article class="gauge">
   <a class="back" href="/">All rivers</a>
-  <p class="kicker carved">
-    {gauge.kind === 'river' ? (gauge.river ?? 'River') : kindLabel[gauge.kind]}
-  </p>
   <h1>{gauge.name}</h1>
-  {#if gauge.town}<p class="town">{gauge.town}</p>{/if}
+  <p class="place">{where}</p>
 
   {#if gauge.value !== undefined && gauge.at}
     <p class="reading">
@@ -137,18 +139,12 @@
     color: var(--ink-soft);
   }
 
-  .kicker {
-    font-size: 0.75rem;
-    color: var(--water);
-  }
-
   h1 {
-    margin-top: calc(var(--space-3) * -1);
     font-size: 1.75rem;
     font-weight: 750;
   }
 
-  .town {
+  .place {
     margin-top: calc(var(--space-3) * -1);
     color: var(--ink-soft);
   }
@@ -179,7 +175,6 @@
     padding: var(--space-2) var(--space-3);
     background: var(--stone-sunk);
     border-radius: var(--radius);
-    box-shadow: inset 0 1px 2px var(--incise);
   }
 
   .chips {
@@ -198,7 +193,6 @@
       font-weight: 600;
       background: var(--stone-sunk);
       border-radius: var(--radius);
-      box-shadow: inset 0 1px 2px var(--incise);
     }
   }
 
@@ -219,7 +213,6 @@
     padding-top: var(--space-4);
     font-size: 0.875rem;
     border-top: 1px solid var(--incise);
-    box-shadow: inset 0 1px 0 var(--incise-light);
 
     dt {
       color: var(--ink-soft);

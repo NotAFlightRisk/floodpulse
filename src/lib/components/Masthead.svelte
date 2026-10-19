@@ -6,7 +6,14 @@
   import type { Summary } from '#lib/types.js';
   import Search from './Search.svelte';
 
-  let { summary, feed, theme }: { summary: Summary; feed: Feed; theme: Theme } = $props();
+  interface Props {
+    summary: Summary;
+    feed: Feed;
+    theme: Theme;
+    picked: boolean;
+  }
+
+  let { summary, feed, theme, picked }: Props = $props();
 
   const latest = $derived(feed.live ? summarise(feed.live) : summary);
   const warned = $derived(latest.warnings.length);
@@ -35,7 +42,7 @@
       {/if}
     </svg>
   </button>
-  <p class="line">
+  <p class="line" class:picked>
     Every river gauge in England, read against its own normal.
     <span class="status" class:late={feed.failed}>
       {latest.rivers.toLocaleString('en-GB')} on rivers, {latest.high} above normal, {latest.rising} rising,
@@ -77,8 +84,7 @@
     border-radius: var(--radius);
     box-shadow:
       inset 0 0 0 3px var(--stone),
-      inset 0 0 0 4px var(--incise),
-      0 1px 0 var(--incise-light);
+      inset 0 0 0 4px var(--incise);
 
     svg {
       width: 1.4em;
@@ -117,6 +123,14 @@
 
   .line {
     grid-column: 1 / -1;
+
+    /* on a phone the gauge's own reading wants the room */
+    &.picked {
+      @media (width < 800px) {
+        display: none;
+      }
+    }
+
     display: grid;
     gap: var(--space-1);
     font-size: 0.9375rem;
