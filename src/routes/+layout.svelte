@@ -110,7 +110,7 @@
   .head,
   .panel,
   .foot {
-    background: var(--stone);
+    background: var(--grain), var(--stone);
     border-right: 1px solid var(--incise);
   }
 

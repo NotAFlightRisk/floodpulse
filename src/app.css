@@ -37,6 +37,8 @@
   --map-shade: light-dark(#5c6661, #000000);
   --map-light: light-dark(#ffffff, #3b4648);
 
+  --grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .09 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+
   --font: 'Mona Sans Variable', system-ui, sans-serif;
   --carved: 125%;
   --tracking: 0.08em;
@@ -128,6 +130,20 @@ input {
   letter-spacing: var(--tracking);
   text-transform: uppercase;
   text-shadow: 0 1px 0 var(--incise-light);
+}
+
+/* a heading with a line cut into the stone after it */
+.rule {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+
+  &::after {
+    content: '';
+    flex: 1;
+    border-top: 1px solid var(--incise);
+    box-shadow: 0 1px 0 var(--incise-light);
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

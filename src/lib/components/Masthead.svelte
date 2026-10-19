@@ -13,7 +13,12 @@
 </script>
 
 <div class="masthead">
-  <a class="name carved" href="/" aria-label="floodpulse, back to all rivers">floodpulse</a>
+  <a class="name carved" href="/" aria-label="floodpulse, back to all rivers">
+    <svg viewBox="0 0 32 32" aria-hidden="true">
+      <path d="M7 10.5h18M16 13v12M16 13 9.5 25M16 13l6.5 12" />
+    </svg>
+    floodpulse
+  </a>
   <button
     class="theme"
     onclick={() => theme.flip()}
@@ -61,9 +66,28 @@
 
   .name {
     justify-self: start;
-    font-size: 1.375rem;
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    padding: var(--space-1) var(--space-3) var(--space-1) var(--space-2);
+    font-size: 1.25rem;
     text-decoration: none;
     color: var(--ink);
+    border: 1px solid var(--incise);
+    border-radius: var(--radius);
+    box-shadow:
+      inset 0 0 0 3px var(--stone),
+      inset 0 0 0 4px var(--incise),
+      0 1px 0 var(--incise-light);
+
+    svg {
+      width: 1.4em;
+      fill: none;
+      stroke: var(--water);
+      stroke-width: 2.6;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
   }
 
   .theme {

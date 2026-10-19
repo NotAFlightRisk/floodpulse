@@ -17,7 +17,7 @@
 
 <div class="overview">
   <section aria-labelledby="warnings">
-    <h2 class="carved" id="warnings">Flood warnings</h2>
+    <h2 class="carved rule" id="warnings">Flood warnings</h2>
     {#if latest.warnings.length}
       <ul class="list">
         {#each latest.warnings as warning (warning.id)}
@@ -44,7 +44,7 @@
   </section>
 
   <section aria-labelledby="moving">
-    <h2 class="carved" id="moving">On the move</h2>
+    <h2 class="carved rule" id="moving">On the move</h2>
     {#if latest.risers.length}
       <ol class="list">
         {#each latest.risers as gauge (gauge.id)}
@@ -71,7 +71,7 @@
   </section>
 
   <section aria-labelledby="reading">
-    <h2 class="carved" id="reading">Reading the map</h2>
+    <h2 class="carved rule" id="reading">Reading the map</h2>
     <p>
       Every mark is an Environment Agency gauge. Its colour says where the level sits against that
       gauge's own normal range, so a deep river and a shallow brook compare fairly. Its shape says

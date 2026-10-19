@@ -90,7 +90,7 @@
   <Pier {gauge} />
 
   <section>
-    <h2 class="carved">Last five days</h2>
+    <h2 class="carved rule">Last five days</h2>
     {#if history?.length}
       <Hydrograph points={history} {gauge} />
     {:else}

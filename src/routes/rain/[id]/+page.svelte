@@ -61,7 +61,7 @@
     </p>
   {/if}
   <section>
-    <h2 class="carved">Last 24 hours</h2>
+    <h2 class="carved rule">Last 24 hours</h2>
     {#if history}
       <svg
         viewBox="0 0 {HOURS * 12} 80"

@@ -344,6 +344,7 @@
 
 <div
   class="map"
+  class:dark={theme.dark}
   bind:this={container}
   role="region"
   aria-label="Map of river gauges in England"
@@ -366,6 +367,21 @@
 
     :global(.tip .maplibregl-popup-tip) {
       display: none;
+    }
+
+    :global(.maplibregl-ctrl-group),
+    :global(.maplibregl-ctrl-attrib) {
+      color: var(--ink-soft);
+      background: var(--stone);
+      box-shadow: 0 1px 0 var(--incise);
+    }
+
+    :global(.maplibregl-ctrl-attrib a) {
+      color: inherit;
+    }
+
+    &.dark :global(.maplibregl-ctrl-icon) {
+      filter: invert(1);
     }
   }
 </style>
