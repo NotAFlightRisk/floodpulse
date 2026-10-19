@@ -1,5 +1,6 @@
 <script lang="ts">
   import { onMount } from 'svelte';
+  import { goto } from '$app/navigation';
   import { page } from '$app/state';
   import Key from '#lib/components/Key.svelte';
   import Map from '#lib/components/Map.svelte';
@@ -42,6 +43,14 @@
     return id && KINDS.includes(kind) ? { kind, id } : undefined;
   });
 
+  // Esc steps back out to the overview, unless someone's typing
+  function onkeydown(event: KeyboardEvent) {
+    const { target } = event;
+    const typing =
+      target instanceof Element && target.closest('input, select, textarea, [contenteditable]');
+    if (event.key === 'Escape' && picked && !typing && !event.defaultPrevented) goto('/');
+  }
+
   onMount(() => {
     loadPlausible();
     return feed.start();
@@ -62,6 +71,8 @@
   <meta name="twitter:card" content="summary_large_image" />
   {@html `<script type="application/ld+json">${structuredData}</script>`}
 </svelte:head>
+
+<svelte:window {onkeydown} />
 
 <div class="atlas" class:picked>
   <header class="head">

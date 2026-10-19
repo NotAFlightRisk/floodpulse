@@ -3,7 +3,14 @@
   import worker from 'maplibre-gl/dist/maplibre-gl-worker.mjs?url';
   import type { ExpressionSpecification } from '@maplibre/maplibre-gl-style-spec';
   import type { Feature } from 'geojson';
-  import type { GeoJSONSource, Map, MapGeoJSONFeature, Point, Popup } from 'maplibre-gl';
+  import type {
+    CameraOptions,
+    GeoJSONSource,
+    Map,
+    MapGeoJSONFeature,
+    Point,
+    Popup
+  } from 'maplibre-gl';
   import { onMount, untrack } from 'svelte';
   import { MediaQuery } from 'svelte/reactivity';
   import { goto } from '$app/navigation';
@@ -544,9 +551,22 @@
 
   const ready = $derived(Boolean(map && live));
 
+  // where the map was before anything was picked, to go back to after
+  let overview: CameraOptions | undefined;
+
   // only when the pick changes, not every time the readings do
   $effect(() => {
-    if (ready && picked) untrack(() => fly(map!, live!, picked));
+    if (!ready) return;
+    const pick = picked;
+    untrack(() => {
+      if (pick) {
+        overview ??= { center: map!.getCenter(), zoom: map!.getZoom() };
+        fly(map!, live!, pick);
+      } else if (overview) {
+        map!.easeTo({ ...overview, duration: calm.current ? 0 : 1200 });
+        overview = undefined;
+      }
+    });
   });
 </script>
 
