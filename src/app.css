@@ -20,6 +20,7 @@
   --state-high: light-dark(#93a000, #d8d24a);
   --state-unknown: light-dark(#8c9390, #66706e);
   --rain: light-dark(#2f63c4, #6d9cf2);
+  --rain-fade: light-dark(rgb(47 99 196 / 0), rgb(109 156 242 / 0));
 
   --severe: light-dark(#7d1022, #f0566d);
   --warning: light-dark(#c62632, #ff7469);

@@ -41,6 +41,25 @@ export function gauge(trend: Trend, fill: string, halo: string) {
   return pixels(context);
 }
 
+/** A few slanting streaks, tiled across wherever it's raining */
+export function streaks(colour: string) {
+  const context = canvas(20);
+  context.strokeStyle = colour;
+  context.lineWidth = 1.25;
+  context.lineCap = 'round';
+  context.beginPath();
+  for (const [x, y] of [
+    [4, 2],
+    [15, 7],
+    [9, 12]
+  ]) {
+    context.moveTo(x, y);
+    context.lineTo(x - 2, y + 6);
+  }
+  context.stroke();
+  return pixels(context);
+}
+
 /** The enamel plaque every warning wears, doubled up when it's a severe one */
 export function plaque(severity: Severity, fill: string, ink: string) {
   const size = 24;

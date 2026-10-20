@@ -43,7 +43,7 @@
     </svg>
   </button>
   <p class="line" class:picked>
-    <span class="tagline">Every river gauge in England, read against its own normal.</span>
+    <span class="tagline">Live river levels and flood warnings across England</span>
     <span class="status" class:late={feed.failed}>
       {latest.rivers.toLocaleString('en-GB')} on rivers, {latest.high} above normal, {latest.rising} rising,
       {warned || 'no'} flood warning{warned === 1 ? '' : 's'} or alert{warned === 1 ? '' : 's'}.

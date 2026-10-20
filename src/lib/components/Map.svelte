@@ -15,7 +15,7 @@
   import { MediaQuery } from 'svelte/reactivity';
   import { goto } from '$app/navigation';
   import { metres, millimetres, severityLabel, stale, stateLabel } from '#lib/format.js';
-  import { gauge, plaque, RATIO, SEVERITIES, STATES, TRENDS } from '#lib/map/icons.js';
+  import { gauge, plaque, RATIO, SEVERITIES, STATES, streaks, TRENDS } from '#lib/map/icons.js';
   import {
     FLOW_FROM,
     FLOWS,
@@ -51,6 +51,12 @@
   const calm = new MediaQuery('prefers-reduced-motion: reduce');
   const wide = new MediaQuery('width >= 800px');
   const RANK = { high: 0, low: 1, normal: 2, unknown: 3 };
+  // how far each gauge's rain spreads in km, and how strongly, for the cloud and its lines alike
+  const SPREAD = 15;
+  const STRENGTH = 2;
+  // rain lines fill squares 0.03° (about 3km) a side, at 111km to a degree of latitude
+  const CELL = 0.03;
+  const KM = 111.32;
 
   let container: HTMLDivElement;
   let map = $state.raw<Map>();
@@ -100,9 +106,60 @@
         .map((r) => ({
           type: 'Feature' as const,
           geometry: point(r.lon, r.lat),
-          properties: { id: r.id, mm: r.mm!, label: `${millimetres(r.mm!)} in the last 15 min` }
+          properties: {
+            id: r.id,
+            mm: r.mm!,
+            weight: weight(r.mm!),
+            label: `${millimetres(r.mm!)} in the last 15 min`
+          }
         }))
     );
+
+  // drizzle still shows, and a millimetre in fifteen minutes is as heavy as the cloud gets
+  const weight = (mm: number) => Math.min(1, mm < 0.1 ? mm * 4 : 0.4 + (mm - 0.1) / 1.5);
+
+  /** Squares wherever the cloud is thick enough to see, on the same bell curve maplibre draws */
+  function showers({ features }: ReturnType<typeof rain>) {
+    const thick = new globalThis.Map<string, number>();
+    for (const { geometry, properties } of features) {
+      if (!properties.weight) continue;
+      const [lon, lat] = geometry.coordinates;
+      const squash = Math.cos((lat * Math.PI) / 180);
+      const [reachX, reachY] = [SPREAD / KM / squash / CELL, SPREAD / KM / CELL];
+      for (let y = Math.floor(lat / CELL - reachY); y <= lat / CELL + reachY; y++)
+        for (let x = Math.floor(lon / CELL - reachX); x <= lon / CELL + reachX; x++) {
+          const dx = ((x + 0.5) * CELL - lon) * KM * squash;
+          const dy = ((y + 0.5) * CELL - lat) * KM;
+          const bell = 0.4 * Math.exp((-4.5 * (dx ** 2 + dy ** 2)) / SPREAD ** 2);
+          const key = `${x} ${y}`;
+          thick.set(key, (thick.get(key) ?? 0) + properties.weight * STRENGTH * bell);
+        }
+    }
+    return collection(
+      [...thick]
+        .filter(([, density]) => density > 0.1)
+        .map(([key, density]) => {
+          const [x, y] = key.split(' ').map(Number);
+          const [w, s, e, n] = [x, y, x + 1, y + 1].map((i) => i * CELL);
+          return {
+            type: 'Feature' as const,
+            geometry: {
+              type: 'Polygon' as const,
+              coordinates: [
+                [
+                  [w, s],
+                  [e, s],
+                  [e, n],
+                  [w, n],
+                  [w, s]
+                ]
+              ]
+            },
+            properties: { density: Math.min(density, 1) }
+          };
+        })
+    );
+  }
 
   const warnings = (data: Live) =>
     collection(
@@ -116,10 +173,11 @@
     );
 
   function paintIcons(target: Map) {
-    const [halo, outline, ink, ...fills] = resolve([
+    const [halo, outline, ink, rainfall, ...fills] = resolve([
       'map-halo',
       'ink',
       'on-plaque',
+      'rain',
       ...STATES.map((state) => `state-${state}`),
       'severe',
       'warning',
@@ -138,6 +196,7 @@
     SEVERITIES.forEach((severity) =>
       add(`w-${severity}`, plaque(severity, fills[STATES.length + severity - 1], ink))
     );
+    add('streaks', streaks(rainfall));
   }
 
   function repaint(target: Map) {
@@ -146,10 +205,11 @@
     const paint = (layer: string, property: string, value: unknown) =>
       target.setPaintProperty(layer, property as never, value as never);
     for (const [layer, property, token] of PAINT) paint(layer, property, colours[token]);
-    const [ink, water, rainColour, label, halo, ...rest] = resolve([
+    const [ink, water, rainColour, rainFade, label, halo, ...rest] = resolve([
       'ink',
       'water',
       'rain',
+      'rain-fade',
       'map-label',
       'map-halo',
       'state-low',
@@ -164,6 +224,15 @@
     paint('ring', 'circle-stroke-color', ink);
     paint('rain', 'circle-color', rainColour);
     paint('rain', 'circle-stroke-color', water);
+    paint('rain-cloud', 'heatmap-color', [
+      'interpolate',
+      ['linear'],
+      ['heatmap-density'],
+      0,
+      rainFade,
+      1,
+      rainColour
+    ]);
     paint('streams', 'line-color', colours.river);
     paint('reaches', 'line-color', ramp(states));
     paint('reach-lit', 'line-color', ink);
@@ -206,10 +275,50 @@
       attribution: 'Environment Agency data (OGL)'
     });
     target.addSource('rain', { type: 'geojson', data: collection([]) });
+    target.addSource('showers', { type: 'geojson', data: collection([]) });
     target.addSource('warnings', { type: 'geojson', data: collection([]) });
     target.addSource('outlines', { type: 'geojson', data: collection([]) });
 
     for (const layer of LAYERS) target.addLayer(layer, 'places');
+    // under the rivers, so the rain doesn't muddy their colours
+    target.addLayer(
+      {
+        id: 'rain-cloud',
+        type: 'heatmap',
+        source: 'rain',
+        paint: {
+          'heatmap-weight': ['get', 'weight'],
+          'heatmap-intensity': STRENGTH,
+          // the spread at any zoom, measured across the middle of England
+          'heatmap-radius': ['interpolate', ['exponential', 2], ['zoom'], 5, 10, 12, 1280],
+          // thins out close up, where the gauges themselves say how much fell
+          'heatmap-opacity': ['interpolate', ['linear'], ['zoom'], GAUGES_FROM, 0.6, 12, 0.25]
+        }
+      },
+      'streams'
+    );
+    target.addLayer(
+      {
+        id: 'rain-lines',
+        type: 'fill',
+        source: 'showers',
+        paint: {
+          'fill-pattern': 'streaks',
+          // or the squares show a seam where they meet
+          'fill-antialias': false,
+          'fill-opacity': [
+            'interpolate',
+            ['linear'],
+            ['zoom'],
+            GAUGES_FROM,
+            ['interpolate', ['linear'], ['get', 'density'], 0.1, 0.2, 1, 0.6],
+            10,
+            0
+          ]
+        }
+      },
+      'streams'
+    );
     target.addLayer({
       id: 'outlines-fill',
       type: 'fill',
@@ -226,6 +335,7 @@
       id: 'rain',
       type: 'circle',
       source: 'rain',
+      minzoom: GAUGES_FROM,
       paint: {
         'circle-radius': ['interpolate', ['linear'], ['get', 'mm'], 0, 1.5, 0.2, 4, 1, 8, 4, 14],
         'circle-opacity': ['case', ['>', ['get', 'mm'], 0], 0.55, 0.25],
@@ -429,7 +539,9 @@
   $effect(() => {
     if (!map || !live) return;
     map.getSource<GeoJSONSource>('gauges')!.setData(gauges(live));
-    map.getSource<GeoJSONSource>('rain')!.setData(rain(live));
+    const wet = rain(live);
+    map.getSource<GeoJSONSource>('rain')!.setData(wet);
+    map.getSource<GeoJSONSource>('showers')!.setData(showers(wet));
     map.getSource<GeoJSONSource>('warnings')!.setData(warnings(live));
     const now = Date.now();
     for (const g of live.gauges) map.setFeatureState(reach(g.id), { p: position(g, now) ?? null });
@@ -451,7 +563,8 @@
         ['in', ['get', 'id'], ['literal', focus]]
       ]
     ]);
-    map.setLayoutProperty('rain', 'visibility', shown.rain ? 'visible' : 'none');
+    for (const layer of ['rain', 'rain-cloud', 'rain-lines'])
+      map.setLayoutProperty(layer, 'visibility', shown.rain ? 'visible' : 'none');
     for (const layer of ['warnings', 'outlines-fill', 'outlines-line'])
       map.setLayoutProperty(layer, 'visibility', shown.warnings ? 'visible' : 'none');
     const network = [
