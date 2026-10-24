@@ -10,10 +10,9 @@
     summary: Summary;
     feed: Feed;
     theme: Theme;
-    picked: boolean;
   }
 
-  let { summary, feed, theme, picked }: Props = $props();
+  let { summary, feed, theme }: Props = $props();
 
   const latest = $derived(feed.live ? summarise(feed.live) : summary);
   const warned = $derived(latest.warnings.length);
@@ -42,7 +41,7 @@
       {/if}
     </svg>
   </button>
-  <p class="line" class:picked>
+  <p class="line">
     <span class="tagline">Live river levels and flood warnings across England</span>
     <span class="status" class:late={feed.failed}>
       {latest.rivers.toLocaleString('en-GB')} on rivers, {latest.high} above normal, {latest.rising} rising,
@@ -67,7 +66,7 @@
     padding: var(--space-5) var(--space-5) var(--space-4);
 
     @media (width < 800px) {
-      padding: var(--space-4);
+      padding: var(--space-3) var(--space-4);
     }
   }
 
@@ -123,21 +122,19 @@
 
   .line {
     grid-column: 1 / -1;
-
-    /* on a phone the gauge's own reading wants the room */
-    &.picked {
-      @media (width < 800px) {
-        display: none;
-      }
-    }
-
     display: grid;
     gap: var(--space-1);
     font-size: 0.9375rem;
     color: var(--ink-soft);
+
+    /* on a phone the map wants the room more, unless the readings are stale */
+    @media (width < 800px) {
+      &:not(:has(.late)) {
+        display: none;
+      }
+    }
   }
 
-  /* on a phone the map wants the room more */
   .tagline {
     @media (width < 800px) {
       display: none;

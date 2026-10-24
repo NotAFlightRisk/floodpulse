@@ -505,23 +505,14 @@
         }
         target.addControl(new NavigationControl({ showCompass: false }), 'top-right');
         target.addControl(new AttributionControl({ compact: true }), 'top-right');
+        // already compact, so maplibre never pops the credits open by itself
+        container.querySelector('.maplibregl-ctrl-attrib')?.classList.add('maplibregl-compact');
         const popup = new Popup({
           closeButton: false,
           closeOnClick: false,
           offset: 12,
           className: 'tip'
         });
-        // the credits fold into the (i) after five seconds, or a drag, as OSM's guidelines allow
-        let touched = false;
-        const shut = () =>
-          touched ||
-          container
-            .querySelector('.maplibregl-compact-show')
-            ?.classList.remove('maplibregl-compact-show');
-        target.once('load', () => setTimeout(shut, 5000));
-        container
-          .querySelector('.maplibregl-ctrl-attrib-button')
-          ?.addEventListener('click', () => (touched = true), { once: true });
         target.on('load', () => {
           addLayers(target!);
           repaint(target!);
