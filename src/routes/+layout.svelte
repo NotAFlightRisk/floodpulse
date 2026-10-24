@@ -76,7 +76,7 @@
 
 <div class="atlas" class:picked>
   <header class="head">
-    <Masthead summary={data.summary} {feed} {theme} picked={Boolean(picked)} />
+    <Masthead summary={data.summary} {feed} {theme} />
   </header>
 
   <section class="map" aria-label="Map of England's rivers and their gauges">
@@ -134,12 +134,12 @@
     @media (width < 800px) {
       grid-template-columns: 1fr;
       /* the map takes the rest of the first screen, with a peek of what's below */
-      grid-template-rows: auto max(50svh, 100svh - 15rem) auto;
+      grid-template-rows: auto max(50svh, 100svh - 11rem) auto;
       grid-template-areas: 'head' 'map' 'rail';
       height: auto;
 
       &.picked {
-        grid-template-rows: auto 36svh auto;
+        grid-template-rows: auto 45svh auto;
       }
     }
   }
