@@ -1,10 +1,14 @@
+import { stale } from './format.ts';
 import type { Gauge, Live, Summary } from './types.ts';
 
 const RISERS = 8;
 
 /** The headline numbers, rivers only, since tides and boreholes play by other rules */
 export function summarise({ fetchedAt, gauges, warnings }: Live): Summary {
-  const rivers = gauges.filter((gauge) => gauge.kind === 'river' && gauge.value !== undefined);
+  const now = Date.parse(fetchedAt);
+  const rivers = gauges.filter(
+    (gauge) => gauge.kind === 'river' && gauge.value !== undefined && !stale(gauge.at, now)
+  );
   const count = (test: (gauge: Gauge) => boolean) => rivers.filter(test).length;
   return {
     fetchedAt,

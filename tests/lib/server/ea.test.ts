@@ -59,6 +59,7 @@ describe('toStation', () => {
     expect(toStation({ ...raw, lat: undefined, long: undefined })).toBeUndefined();
     expect(toStation({ ...raw, notation: '' })).toBeUndefined();
     expect(toStation({ ...raw, measures: measure('Stage', 'V') })).toBeUndefined();
+    expect(toStation({ ...raw, measures: measure('Stage', 'mm') })).toBeUndefined();
   });
 
   it('ignores a scale that is only a link, and a range that runs backwards', () => {
