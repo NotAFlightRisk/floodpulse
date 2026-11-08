@@ -35,6 +35,9 @@ const QUALIFIERS: [string, Kind, string][] = [
   ['Downstream Stage', 'river', 'downstageScale']
 ];
 
+// metres, bare or above a datum (so not mm or m3/s)
+const METRES = /^m(AOD|ASD|ACD|BDAT)?$/;
+
 const mark = (raw: unknown): Mark | undefined => {
   const value = num((raw as Raw | undefined)?.value);
   const date = text((raw as Raw | undefined)?.dateTime);
@@ -52,7 +55,7 @@ export function toStation(raw: Raw): Station | undefined {
   const id = text(raw.notation);
   const [lat, lon] = place(raw) ?? [];
   if (!id || lat === undefined || lon === undefined || tail(raw.status) === 'statusClosed') return;
-  const measures = list(raw.measures).filter((m) => text(m.unitName)?.startsWith('m'));
+  const measures = list(raw.measures).filter((m) => METRES.test(text(m.unitName) ?? ''));
   for (const [qualifier, kind, scaleKey] of QUALIFIERS) {
     const measure = measures.find((m) => text(m.qualifier) === qualifier);
     if (!measure) continue;

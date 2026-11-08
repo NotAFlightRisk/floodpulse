@@ -11,6 +11,7 @@ const gauge = (id: string, extra: Partial<Gauge>): Gauge => ({
   measure: `${id}-level`,
   unit: 'm',
   value: 1,
+  at: '2026-10-19T14:45:00Z',
   trend: 'steady',
   state: 'normal',
   ...extra
@@ -31,5 +32,18 @@ describe('summarise', () => {
     });
     expect(summary).toMatchObject({ rivers: 2, high: 1, rising: 2, tracked: 2 });
     expect(summary.risers.map((g) => g.id)).toEqual(['fast', 'slow']);
+  });
+
+  it('leaves out gauges that have gone quiet, even if they last read high', () => {
+    const summary = summarise({
+      fetchedAt: '2026-10-19T15:00:00Z',
+      rain: [],
+      warnings: [],
+      gauges: [
+        gauge('live', { state: 'high' }),
+        gauge('gone', { at: '2026-10-15T09:00:00Z', state: 'high' })
+      ]
+    });
+    expect(summary).toMatchObject({ rivers: 1, high: 1 });
   });
 });
