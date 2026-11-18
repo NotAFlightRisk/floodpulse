@@ -39,6 +39,12 @@ const found = (index?: number) => (index === undefined ? undefined : river(index
 export const riverBySlug = (slug: string) => found(bySlug.get(slug));
 export const riverOf = (gauge: string) => found(byGauge.get(gauge));
 
+/** The river with only the stops the snapshot has a gauge for */
+export const gauged = (river: River, gauges: Map<string, Gauge>): River => ({
+  ...river,
+  stops: river.stops.filter(({ id }) => gauges.has(id))
+});
+
 /** Every river, biggest first, with what it flows into for telling two Avons apart */
 export const riverNames = (): RiverName[] =>
   entries.map(({ slug, name, gauges, into }) => ({
@@ -62,5 +68,5 @@ export function busiest(gauges: Gauge[], count = 6) {
   return scored
     .sort((a, b) => b.high - a.high || b.rising - a.rising || a.index - b.index)
     .slice(0, count)
-    .map(({ index }) => river(index));
+    .map(({ index }) => gauged(river(index), byId));
 }

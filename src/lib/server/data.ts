@@ -3,6 +3,7 @@ import { waitUntil } from 'cloudflare:workers';
 import type { Gauge, Live, River, Summary } from '#lib/types.js';
 import { refresh } from './refresh.ts';
 import { report } from './report.ts';
+import { gauged } from './rivers.ts';
 import { read, readJson } from './store.ts';
 
 // the cron should have been by twice in this time, so it's time to go and look ourselves
@@ -39,8 +40,9 @@ export const findGauge = async (id: string) => (await snapshot())?.gauges.find((
 export const findRain = async (id: string) => (await snapshot())?.rain.find((r) => r.id === id);
 export const allGauges = async (): Promise<Gauge[]> => (await snapshot())?.gauges ?? [];
 
-/** The snapshot's gauges on one river, in order from its source */
-export async function gaugesOn({ stops }: River) {
+/** The river down to the stops in the snapshot, and their gauges in order from its source */
+export async function gaugesOn(river: River) {
   const byId = new Map((await allGauges()).map((gauge) => [gauge.id, gauge]));
-  return stops.flatMap(({ id }) => byId.get(id) ?? []);
+  const trimmed = gauged(river, byId);
+  return { river: trimmed, gauges: trimmed.stops.map(({ id }) => byId.get(id)!) };
 }
