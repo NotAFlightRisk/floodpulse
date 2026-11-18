@@ -421,7 +421,7 @@
   async function open({ layer, properties: p }: MapGeoJSONFeature) {
     const kind = { gauges: 'station', warnings: 'warning', rain: 'rain' }[layer.id];
     if (kind) return goto(`/${kind}/${p.id}`, { reset: false });
-    if (p.g) return goto(`/station/${p.g}`, { reset: false });
+    if (byId.has(p.g)) return goto(`/station/${p.g}`, { reset: false });
     if (p.r !== undefined) goto(`/river/${(await riverNames())[p.r].slug}`, { reset: false });
   }
 
