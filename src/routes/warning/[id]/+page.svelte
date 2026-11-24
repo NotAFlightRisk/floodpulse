@@ -28,17 +28,17 @@
   <a class="back" href="/">All rivers</a>
   <h1>{warning.label}</h1>
   <p class="severity">
-    <Plaque severity={warning.severity} /><span class="carved"
-      >{severityLabel[warning.severity]}</span
-    >
+    <Plaque severity={warning.severity} /><span class="carved">
+      {severityLabel[warning.severity]}
+    </span>
   </p>
   <p class="where">{[warning.water, warning.county, warning.area].filter(Boolean).join(' · ')}</p>
   <p class="when">In force since {clock(since)} on {date(since)} ({ago(since, feed.now)})</p>
   {#if warning.message}<p class="message">{warning.message}</p>{/if}
   <p class="links">
-    <ExternalLink href="{official}/target-area/{warning.id}"
-      >This warning on Check for flooding</ExternalLink
-    >
+    <ExternalLink href="{official}/target-area/{warning.id}">
+      This warning on Check for flooding
+    </ExternalLink>
   </p>
   <p class="note">
     The outline on the map is the area this warning covers, not where the water actually is.

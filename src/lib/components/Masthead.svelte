@@ -46,12 +46,12 @@
     <span class="status" class:late={feed.failed}>
       {latest.rivers.toLocaleString('en-GB')} on rivers, {latest.high} above normal, {latest.rising} rising,
       {warned || 'no'} flood warning{warned === 1 ? '' : 's'} or alert{warned === 1 ? '' : 's'}.
-      <span
-        >{feed.failed ? "Can't reach us, so these are" : 'Readings'} from {ago(
+      <span>
+        {feed.failed ? "Can't reach us, so these are" : 'Readings'} from {ago(
           latest.fetchedAt,
           feed.now
-        )}.</span
-      >
+        )}.
+      </span>
     </span>
   </p>
   <Search {feed} />

@@ -42,10 +42,10 @@
               <Plaque severity={warning.severity} />
               <span>
                 <strong>{warning.label}</strong>
-                <small
-                  >{severityLabel[warning.severity]}{warning.county ? `, ${warning.county}` : ''},
-                  since {ago(warning.changed ?? warning.raised, feed.now)}</small
-                >
+                <small>
+                  {severityLabel[warning.severity]}{warning.county ? `, ${warning.county}` : ''},
+                  since {ago(warning.changed ?? warning.raised, feed.now)}
+                </small>
               </span>
             </a>
           </li>
@@ -100,9 +100,9 @@
               <small>{said(river)}</small>
             </span>
             {#if feed.live}
-              <span class="shape"
-                ><RiverProfile {river} gauges={lookup} now={feed.now} small /></span
-              >
+              <span class="shape">
+                <RiverProfile {river} gauges={lookup} now={feed.now} small />
+              </span>
             {/if}
           </a>
         </li>
