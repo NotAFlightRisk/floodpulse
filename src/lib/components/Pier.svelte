@@ -95,12 +95,13 @@
     {#each marks as mark (mark.label)}
       <g class="mark">
         <line x1="40" x2="146" y1={y(mark.value)} y2={y(mark.value)} />
-        <text x="152" y={labelled[mark.label] - 3}
-          >{mark.label.toUpperCase()} {metres(mark.value)}</text
-        >
-        <text class="when" x="152" y={labelled[mark.label] + 11}
-          >{date(mark.date).toUpperCase()}</text
-        >
+        <text x="152" y={labelled[mark.label] - 3}>
+          {mark.label.toUpperCase()}
+          {metres(mark.value)}
+        </text>
+        <text class="when" x="152" y={labelled[mark.label] + 11}>
+          {date(mark.date).toUpperCase()}
+        </text>
       </g>
     {/each}
   </svg>

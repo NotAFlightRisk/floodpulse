@@ -101,15 +101,17 @@
       <p>
         Readings from the <ExternalLink
           href="https://environment.data.gov.uk/flood-monitoring/doc/reference"
-          >Environment Agency</ExternalLink
-        >, under the
+        >
+          Environment Agency
+        </ExternalLink>, under the
         <ExternalLink
           href="https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/"
-          >Open Government Licence</ExternalLink
-        >. Rivers from
-        <ExternalLink href="https://www.ordnancesurvey.co.uk/products/os-open-rivers"
-          >OS Open Rivers</ExternalLink
-        >, contains OS data © Crown copyright and database right 2026. Map data ©
+        >
+          Open Government Licence
+        </ExternalLink>. Rivers from
+        <ExternalLink href="https://www.ordnancesurvey.co.uk/products/os-open-rivers">
+          OS Open Rivers
+        </ExternalLink>, contains OS data © Crown copyright and database right 2026. Map data ©
         <ExternalLink href="https://www.openstreetmap.org/copyright">OpenStreetMap</ExternalLink>
         contributors. Not an official service, so for anything that matters check
         <ExternalLink href={official}>Check for flooding</ExternalLink> or call Floodline on 0345 988

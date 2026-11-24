@@ -75,8 +75,10 @@
   <p class="place">
     {#if data.river && gauge.river === data.river.name}
       {gauge.kind === 'river' ? '' : `${kindLabel[gauge.kind]} gauge, `}<a
-        href="/river/{data.river.slug}">{gauge.river}</a
-      >{gauge.town ? `, ${gauge.town}` : ''}
+        href="/river/{data.river.slug}"
+      >
+        {gauge.river}
+      </a>{gauge.town ? `, ${gauge.town}` : ''}
     {:else}
       {where}
     {/if}
@@ -146,9 +148,9 @@
           {/if}
         </nav>
       {/if}
-      <a class="whole" href="/river/{data.river.slug}"
-        >All {data.river.stops.length} gauges on the {data.river.name}</a
-      >
+      <a class="whole" href="/river/{data.river.slug}">
+        All {data.river.stops.length} gauges on the {data.river.name}
+      </a>
     </section>
   {/if}
 
@@ -170,12 +172,12 @@
   </dl>
 
   <p class="links">
-    {#if gauge.rloi}<ExternalLink href="{official}/station/{gauge.rloi}"
-        >Official page for this gauge</ExternalLink
-      >{/if}
-    <ExternalLink href="https://environment.data.gov.uk/flood-monitoring/id/stations/{gauge.id}"
-      >Raw data</ExternalLink
-    >
+    {#if gauge.rloi}<ExternalLink href="{official}/station/{gauge.rloi}">
+        Official page for this gauge
+      </ExternalLink>{/if}
+    <ExternalLink href="https://environment.data.gov.uk/flood-monitoring/id/stations/{gauge.id}">
+      Raw data
+    </ExternalLink>
   </p>
 </article>
 
