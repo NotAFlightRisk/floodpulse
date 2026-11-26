@@ -12,6 +12,7 @@
     imageAlt,
     name,
     official,
+    relatedApps,
     site,
     source,
     structuredData,
@@ -119,8 +120,16 @@
       </p>
       <p>
         <ExternalLink href={source}>Source on GitHub</ExternalLink> · made by
-        <ExternalLink href="https://peng.ly">NotAFlightRisk</ExternalLink>
+        <ExternalLink href="https://peng.ly">NotAFlightRisk</ExternalLink>, who also made:
       </p>
+      <ul class="more">
+        {#each relatedApps as app (app.slug)}
+          <li>
+            <img src="/apps/{app.slug}.svg" alt="" width="16" height="16" loading="lazy" />
+            <ExternalLink href={app.url}>{app.name}</ExternalLink>
+          </li>
+        {/each}
+      </ul>
     </footer>
   </div>
 </div>
@@ -195,6 +204,21 @@
 
     @media (width < 800px) {
       padding: var(--space-4);
+    }
+  }
+
+  .more {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-1) var(--space-3);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+
+    li {
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
     }
   }
 </style>
