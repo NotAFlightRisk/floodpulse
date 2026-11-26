@@ -125,7 +125,13 @@
       <ul class="more">
         {#each relatedApps as app (app.slug)}
           <li>
-            <img src="/apps/{app.slug}.svg" alt="" width="16" height="16" loading="lazy" />
+            <img
+              src="https://portfolio.peng.ly/logos/{app.slug}.svg"
+              alt=""
+              width="16"
+              height="16"
+              loading="lazy"
+            />
             <ExternalLink href={app.url}>{app.name}</ExternalLink>
           </li>
         {/each}
