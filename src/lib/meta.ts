@@ -8,7 +8,7 @@ export const description =
 export const imageAlt =
   "A map of England's rivers, each stretch coloured by how high its gauge is running against normal";
 
-/** Our other live data apps, listed in the footer with their logos in static/apps */
+/** Our other live data apps, listed in the footer */
 export const relatedApps = [
   { slug: 'tubespotting', name: 'Tube Spotting', url: 'https://tubespotting.peng.ly' },
   { slug: 'carbonara', name: 'carbonara', url: 'https://carbonara.peng.ly' },

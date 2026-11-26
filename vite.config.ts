@@ -41,7 +41,7 @@ export default defineConfig({
           'default-src': ['self'],
           'script-src': ['self', ...pulse],
           'connect-src': ['self', ...tiles, ...pulse, ...oops],
-          'img-src': ['self', 'data:', 'blob:'],
+          'img-src': ['self', 'data:', 'blob:', 'https://portfolio.peng.ly'],
           'worker-src': ['self', 'blob:'],
           'child-src': ['self', 'blob:'],
           'style-src': ['self', 'unsafe-inline'],
