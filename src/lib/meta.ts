@@ -8,6 +8,14 @@ export const description =
 export const imageAlt =
   "A map of England's rivers, each stretch coloured by how high its gauge is running against normal";
 
+/** Our other live data apps, listed in the footer with their logos in static/apps */
+export const relatedApps = [
+  { slug: 'tubespotting', name: 'Tube Spotting', url: 'https://tubespotting.peng.ly' },
+  { slug: 'carbonara', name: 'carbonara', url: 'https://carbonara.peng.ly' },
+  { slug: 'leaves-on-the-line', name: 'Leaves on the Line', url: 'https://leaves.peng.ly' },
+  { slug: 'hearsay', name: 'hearsay', url: 'https://hearsay.peng.ly' }
+];
+
 /** Tells search engines what the site's called and what it is */
 export const structuredData = JSON.stringify({
   '@context': 'https://schema.org',
